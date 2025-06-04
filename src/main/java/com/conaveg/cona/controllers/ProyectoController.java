@@ -9,20 +9,36 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// OpenAPI/Swagger imports
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/proyectos")
+@Tag(name = "Proyectos", description = "Gestión de proyectos y locaciones de trabajo para asignación de personal.")
 public class ProyectoController {
     @Autowired
     private ProyectoService proyectoService;
 
+    @Operation(summary = "Listar proyectos", description = "Obtiene todos los proyectos registrados en el sistema.")
+    @ApiResponse(responseCode = "200", description = "Lista de proyectos obtenida correctamente")
     @GetMapping
     public ResponseEntity<List<Proyecto>> getAllProyectos() {
         List<Proyecto> proyectos = proyectoService.getAllProyectos();
         return ResponseEntity.ok(proyectos);
     }
 
+    @Operation(summary = "Obtener proyecto por ID", description = "Obtiene un proyecto específico a partir de su ID.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Proyecto encontrado"),
+        @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Proyecto> getProyectoById(@PathVariable Long id) {
+    public ResponseEntity<Proyecto> getProyectoById(
+            @Parameter(description = "ID del proyecto a buscar", example = "1") @PathVariable Long id) {
         Proyecto proyecto = proyectoService.getProyectoById(id);
         if (proyecto != null) {
             return ResponseEntity.ok(proyecto);
@@ -31,14 +47,26 @@ public class ProyectoController {
         }
     }
 
+    @Operation(summary = "Crear proyecto", description = "Crea un nuevo proyecto o locación de trabajo.")
+    @ApiResponse(responseCode = "201", description = "Proyecto creado exitosamente")
     @PostMapping
-    public ResponseEntity<Proyecto> createProyecto(@RequestBody Proyecto proyecto) {
+    public ResponseEntity<Proyecto> createProyecto(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto proyecto a crear")
+            @RequestBody Proyecto proyecto) {
         Proyecto created = proyectoService.saveProyecto(proyecto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @Operation(summary = "Actualizar proyecto", description = "Actualiza los datos de un proyecto existente.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Proyecto actualizado correctamente"),
+        @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Proyecto> updateProyecto(@PathVariable Long id, @RequestBody Proyecto proyecto) {
+    public ResponseEntity<Proyecto> updateProyecto(
+            @Parameter(description = "ID del proyecto a actualizar", example = "1") @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del proyecto")
+            @RequestBody Proyecto proyecto) {
         Proyecto updated = proyectoService.updateProyecto(id, proyecto);
         if (updated != null) {
             return ResponseEntity.ok(updated);
@@ -47,8 +75,14 @@ public class ProyectoController {
         }
     }
 
+    @Operation(summary = "Eliminar proyecto", description = "Elimina un proyecto existente por su ID.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Proyecto eliminado correctamente"),
+        @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProyecto(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProyecto(
+            @Parameter(description = "ID del proyecto a eliminar", example = "1") @PathVariable Long id) {
         Proyecto proyecto = proyectoService.getProyectoById(id);
         if (proyecto != null) {
             proyectoService.deleteProyecto(id);

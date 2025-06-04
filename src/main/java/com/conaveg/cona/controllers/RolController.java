@@ -17,24 +17,36 @@ import org.springframework.web.bind.annotation.RestController;
 import com.conaveg.cona.models.Rol;
 import com.conaveg.cona.services.RolService;
 
+// OpenAPI/Swagger imports
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/roles")
+@Tag(name = "Roles", description = "Operaciones CRUD para roles de usuario")
 public class RolController {
-    // Aquí puedes definir los endpoints relacionados con los roles.
-    // Por ejemplo, podrías tener métodos para obtener todos los roles,
-    // crear un nuevo rol, actualizar un rol existente, etc.
-    // Asegúrate de inyectar el RolService y utilizarlo en estos métodos.
     @Autowired
     private RolService rolService;
 
+    @Operation(summary = "Listar todos los roles", description = "Obtiene una lista de todos los roles registrados.")
+    @ApiResponse(responseCode = "200", description = "Lista de roles obtenida correctamente")
     @GetMapping
     public ResponseEntity<List<Rol>> getAllRoles() {
         List<Rol> roles = rolService.getAllRoles();
         return ResponseEntity.ok(roles);
     }
 
+    @Operation(summary = "Obtener rol por ID", description = "Obtiene un rol específico a partir de su ID.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Rol encontrado"),
+        @ApiResponse(responseCode = "404", description = "Rol no encontrado")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Rol> getRolById(@PathVariable Long id) {
+    public ResponseEntity<Rol> getRolById(
+            @Parameter(description = "ID del rol a buscar", example = "1") @PathVariable Long id) {
         Rol rol = rolService.getRolById(id);
         if (rol != null) {
             return ResponseEntity.ok(rol);
@@ -43,14 +55,26 @@ public class RolController {
         }
     }
 
+    @Operation(summary = "Crear nuevo rol", description = "Crea un nuevo rol en el sistema.")
+    @ApiResponse(responseCode = "201", description = "Rol creado exitosamente")
     @PostMapping
-    public ResponseEntity<Rol> createRol(@RequestBody Rol rol) {
+    public ResponseEntity<Rol> createRol(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto rol a crear")
+            @RequestBody Rol rol) {
         Rol createdRol = rolService.saveRol(rol);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRol);
     }
 
+    @Operation(summary = "Actualizar rol", description = "Actualiza los datos de un rol existente.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Rol actualizado correctamente"),
+        @ApiResponse(responseCode = "404", description = "Rol no encontrado")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Rol> updateRol(@PathVariable Long id, @RequestBody Rol rol) {
+    public ResponseEntity<Rol> updateRol(
+            @Parameter(description = "ID del rol a actualizar", example = "1") @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del rol")
+            @RequestBody Rol rol) {
         Rol updatedRol = rolService.updateRol(id, rol);
         if (updatedRol != null) {
             return ResponseEntity.ok(updatedRol);
@@ -59,8 +83,14 @@ public class RolController {
         }
     }
 
+    @Operation(summary = "Eliminar rol", description = "Elimina un rol existente por su ID.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Rol eliminado correctamente"),
+        @ApiResponse(responseCode = "404", description = "Rol no encontrado")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRol(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRol(
+            @Parameter(description = "ID del rol a eliminar", example = "1") @PathVariable Long id) {
         Rol rol = rolService.getRolById(id);
         if (rol != null) {
             rolService.deleteRol(id);
