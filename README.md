@@ -39,7 +39,7 @@ Sistema backend desarrollado en Spring Boot para gestionar inventarios, asistenc
 El sistema utiliza MariaDB. Ejemplo de configuración en `application.properties`:
 ```properties
 spring.datasource.url=jdbc:mariadb://localhost:3306/conaveg_db
-spring.datasource.username=root
+spring.datasource.username=TU_USUARIO
 spring.datasource.password=TU_PASSWORD
 ```
 Asegúrate de tener la base de datos creada antes de iniciar la aplicación.
