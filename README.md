@@ -68,33 +68,69 @@ Asegúrate de tener la base de datos creada antes de iniciar la aplicación.
 
 Cada recurso expone operaciones CRUD estándar (GET, POST, PUT, DELETE).
 
-## Ejemplo de Modelo y Endpoint
-### Modelo: Inventario (fragmento)
+## Ejemplo de Modelos y Endpoints
+
+### Modelo: Rol
 ```java
-public class Inventario {
+public class Rol {
     private Long id;
-    private String codigo;
     private String nombre;
     private String descripcion;
-    // ...otros campos
+    private String estado; // generado por BD
+    private String uniqueId; // generado por BD
+    private Instant createdAt; // generado por BD
+    private Instant updatedAt; // generado por BD
+    // getters y setters
 }
 ```
 
-### Endpoint: Inventario
-- `GET /api/inventario` — Listar inventario
-- `GET /api/inventario/{id}` — Obtener un ítem por ID
-- `POST /api/inventario` — Crear nuevo ítem
-- `PUT /api/inventario/{id}` — Actualizar ítem
-- `DELETE /api/inventario/{id}` — Eliminar ítem
+#### Endpoints Rol
+- `GET /api/roles` — Listar todos los roles
+- `GET /api/roles/{id}` — Obtener un rol por ID
+- `POST /api/roles` — Crear nuevo rol
+- `PUT /api/roles/{id}` — Actualizar rol existente
+- `DELETE /api/roles/{id}` — Eliminar rol
 
-#### Ejemplo de request para crear inventario
+#### Ejemplo de request para crear un Rol
 ```json
 {
-  "codigo": "EQ-001",
-  "nombre": "Laptop Dell",
-  "descripcion": "Laptop para oficina",
-  "marca": "Dell",
-  "modelo": "Inspiron 15"
+  "nombre": "Administrador",
+  "descripcion": "Rol con todos los permisos"
+}
+```
+
+### Modelo: User
+```java
+public class User {
+    private Long id;
+    private Rol role; // relación ManyToOne
+    private String userName;
+    private String email;
+    private Instant emailVerifiedAt;
+    private String password;
+    private String rememberToken;
+    private String estado; // generado por BD
+    private String uniqueId; // generado por BD
+    private Instant createdAt; // generado por BD
+    private Instant updatedAt; // generado por BD
+    // getters y setters
+}
+```
+
+#### Endpoints User
+- `GET /api/users` — Listar todos los usuarios
+- `GET /api/users/{id}` — Obtener un usuario por ID
+- `POST /api/users` — Crear nuevo usuario
+- `PUT /api/users/{id}` — Actualizar usuario existente
+- `DELETE /api/users/{id}` — Eliminar usuario
+
+#### Ejemplo de request para crear un User
+```json
+{
+  "role": { "id": 1 },
+  "userName": "jdoe",
+  "email": "jdoe@example.com",
+  "password": "12345678"
 }
 ```
 
