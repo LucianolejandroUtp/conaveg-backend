@@ -1,6 +1,6 @@
 package com.conaveg.cona.controller;
 
-import com.conaveg.cona.model.Proveedor;
+import com.conaveg.cona.dto.ProveedorDTO;
 import com.conaveg.cona.service.ProveedorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,9 +25,8 @@ public class ProveedorController {
 
     @Operation(summary = "Listar proveedores", description = "Obtiene todos los proveedores registrados en el sistema.")
     @ApiResponse(responseCode = "200", description = "Lista de proveedores obtenida correctamente")
-    @GetMapping
-    public ResponseEntity<List<Proveedor>> getAllProveedores() {
-        List<Proveedor> proveedores = proveedorService.getAllProveedores();
+    @GetMapping    public ResponseEntity<List<ProveedorDTO>> getAllProveedores() {
+        List<ProveedorDTO> proveedores = proveedorService.getAllProveedores();
         return ResponseEntity.ok(proveedores);
     }
 
@@ -36,10 +35,9 @@ public class ProveedorController {
         @ApiResponse(responseCode = "200", description = "Proveedor encontrado"),
         @ApiResponse(responseCode = "404", description = "Proveedor no encontrado")
     })
-    @GetMapping("/{id}")
-    public ResponseEntity<Proveedor> getProveedorById(
+    @GetMapping("/{id}")    public ResponseEntity<ProveedorDTO> getProveedorById(
             @Parameter(description = "ID del proveedor a buscar", example = "1") @PathVariable Long id) {
-        Proveedor proveedor = proveedorService.getProveedorById(id);
+        ProveedorDTO proveedor = proveedorService.getProveedorById(id);
         if (proveedor != null) {
             return ResponseEntity.ok(proveedor);
         } else {
@@ -49,11 +47,10 @@ public class ProveedorController {
 
     @Operation(summary = "Crear proveedor", description = "Crea un nuevo proveedor de bienes o servicios.")
     @ApiResponse(responseCode = "201", description = "Proveedor creado exitosamente")
-    @PostMapping
-    public ResponseEntity<Proveedor> createProveedor(
+    @PostMapping    public ResponseEntity<ProveedorDTO> createProveedor(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto proveedor a crear")
-            @RequestBody Proveedor proveedor) {
-        Proveedor created = proveedorService.saveProveedor(proveedor);
+            @RequestBody ProveedorDTO proveedor) {
+        ProveedorDTO created = proveedorService.saveProveedor(proveedor);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -62,12 +59,11 @@ public class ProveedorController {
         @ApiResponse(responseCode = "200", description = "Proveedor actualizado correctamente"),
         @ApiResponse(responseCode = "404", description = "Proveedor no encontrado")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<Proveedor> updateProveedor(
+    @PutMapping("/{id}")    public ResponseEntity<ProveedorDTO> updateProveedor(
             @Parameter(description = "ID del proveedor a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del proveedor")
-            @RequestBody Proveedor proveedor) {
-        Proveedor updated = proveedorService.updateProveedor(id, proveedor);
+            @RequestBody ProveedorDTO proveedor) {
+        ProveedorDTO updated = proveedorService.updateProveedor(id, proveedor);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
@@ -79,13 +75,11 @@ public class ProveedorController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Proveedor eliminado correctamente"),
         @ApiResponse(responseCode = "404", description = "Proveedor no encontrado")
-    })
-    @DeleteMapping("/{id}")
+    })    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProveedor(
             @Parameter(description = "ID del proveedor a eliminar", example = "1") @PathVariable Long id) {
-        Proveedor proveedor = proveedorService.getProveedorById(id);
-        if (proveedor != null) {
-            proveedorService.deleteProveedor(id);
+        boolean deleted = proveedorService.deleteProveedor(id);
+        if (deleted) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
