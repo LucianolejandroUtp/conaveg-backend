@@ -68,7 +68,12 @@ public class UserService {
         Rol rol = user.getRole();
         RolDTO rolDTO = null;
         if (rol != null) {
-            rolDTO = new RolDTO(rol.getId(), rol.getNombre());
+            rolDTO = new RolDTO();
+            rolDTO.setId(rol.getId());
+            rolDTO.setNombre(rol.getNombre());
+            rolDTO.setDescripcion(rol.getDescripcion());
+            rolDTO.setEstado(rol.getEstado());
+            rolDTO.setUniqueId(rol.getUniqueId());
         }
         return new UserDTO(
                 user.getId(),

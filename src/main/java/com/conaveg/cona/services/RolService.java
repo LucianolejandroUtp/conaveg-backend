@@ -1,11 +1,13 @@
 package com.conaveg.cona.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.conaveg.cona.models.Rol;
+import com.conaveg.cona.dto.RolDTO;
 import com.conaveg.cona.repositories.RolRepository;
 
 @Service
@@ -23,25 +25,47 @@ public class RolService {
     @Autowired
     private RolRepository rolRepository;
 
-    public List<Rol> getAllRoles() {
-        return rolRepository.findAll();
+    public List<RolDTO> getAllRoles() {
+        return rolRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public Rol getRolById(Long id) {
-        return rolRepository.findById(id).orElse(null);
+    public RolDTO getRolById(Long id) {
+        return rolRepository.findById(id).map(this::toDTO).orElse(null);
     }
 
-    public Rol saveRol(Rol rol) {
-        return rolRepository.save(rol);
+    public RolDTO saveRol(RolDTO rolDTO) {
+        Rol rol = toEntity(rolDTO);
+        Rol saved = rolRepository.save(rol);
+        return toDTO(saved);
     }
 
-    public Rol updateRol(Long id, Rol rol) {
-        // Primero, verifica si el rol existe
+    public RolDTO updateRol(Long id, RolDTO rolDTO) {
         if (rolRepository.existsById(id)) {
+            Rol rol = toEntity(rolDTO);
             rol.setId(id);
-            return rolRepository.save(rol);
+            Rol updated = rolRepository.save(rol);
+            return toDTO(updated);
         }
         return null;
+    }
+    private RolDTO toDTO(Rol rol) {
+        RolDTO dto = new RolDTO();
+        dto.setId(rol.getId());
+        dto.setNombre(rol.getNombre());
+        dto.setDescripcion(rol.getDescripcion());
+        dto.setEstado(rol.getEstado());
+        dto.setUniqueId(rol.getUniqueId());
+        return dto;
+    }
+
+    private Rol toEntity(RolDTO dto) {
+        Rol rol = new Rol();
+        rol.setId(dto.getId());
+        rol.setNombre(dto.getNombre());
+        rol.setDescripcion(dto.getDescripcion());
+        rol.setEstado(dto.getEstado());
+        rol.setUniqueId(dto.getUniqueId());
+        return rol;
     }
 
     public void deleteRol(Long id) {

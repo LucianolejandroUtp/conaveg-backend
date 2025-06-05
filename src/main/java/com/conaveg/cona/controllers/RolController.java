@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.conaveg.cona.models.Rol;
+import com.conaveg.cona.dto.RolDTO;
 import com.conaveg.cona.services.RolService;
 
 // OpenAPI/Swagger imports
@@ -34,8 +34,8 @@ public class RolController {
     @Operation(summary = "Listar todos los roles", description = "Obtiene una lista de todos los roles registrados.")
     @ApiResponse(responseCode = "200", description = "Lista de roles obtenida correctamente")
     @GetMapping
-    public ResponseEntity<List<Rol>> getAllRoles() {
-        List<Rol> roles = rolService.getAllRoles();
+    public ResponseEntity<List<RolDTO>> getAllRoles() {
+        List<RolDTO> roles = rolService.getAllRoles();
         return ResponseEntity.ok(roles);
     }
 
@@ -45,9 +45,9 @@ public class RolController {
         @ApiResponse(responseCode = "404", description = "Rol no encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Rol> getRolById(
+    public ResponseEntity<RolDTO> getRolById(
             @Parameter(description = "ID del rol a buscar", example = "1") @PathVariable Long id) {
-        Rol rol = rolService.getRolById(id);
+        RolDTO rol = rolService.getRolById(id);
         if (rol != null) {
             return ResponseEntity.ok(rol);
         } else {
@@ -58,10 +58,10 @@ public class RolController {
     @Operation(summary = "Crear nuevo rol", description = "Crea un nuevo rol en el sistema.")
     @ApiResponse(responseCode = "201", description = "Rol creado exitosamente")
     @PostMapping
-    public ResponseEntity<Rol> createRol(
+    public ResponseEntity<RolDTO> createRol(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto rol a crear")
-            @RequestBody Rol rol) {
-        Rol createdRol = rolService.saveRol(rol);
+            @RequestBody RolDTO rolDTO) {
+        RolDTO createdRol = rolService.saveRol(rolDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRol);
     }
 
@@ -71,11 +71,11 @@ public class RolController {
         @ApiResponse(responseCode = "404", description = "Rol no encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Rol> updateRol(
+    public ResponseEntity<RolDTO> updateRol(
             @Parameter(description = "ID del rol a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del rol")
-            @RequestBody Rol rol) {
-        Rol updatedRol = rolService.updateRol(id, rol);
+            @RequestBody RolDTO rolDTO) {
+        RolDTO updatedRol = rolService.updateRol(id, rolDTO);
         if (updatedRol != null) {
             return ResponseEntity.ok(updatedRol);
         } else {
@@ -91,7 +91,7 @@ public class RolController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRol(
             @Parameter(description = "ID del rol a eliminar", example = "1") @PathVariable Long id) {
-        Rol rol = rolService.getRolById(id);
+        RolDTO rol = rolService.getRolById(id);
         if (rol != null) {
             rolService.deleteRol(id);
             return ResponseEntity.noContent().build();
