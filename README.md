@@ -47,10 +47,12 @@ spring.datasource.password=TU_PASSWORD
 Asegúrate de tener la base de datos creada antes de iniciar la aplicación.
 
 ## Estructura del Proyecto
-- `controllers/`: Endpoints REST.
-- `services/`: Lógica de negocio.
-- `repositories/`: Acceso a datos (JPA).
-- `models/`: Entidades del dominio.
+- `config/`: Configuraciones de la aplicación (Jackson, etc.).
+- `controller/`: Endpoints REST.
+- `dto/`: Objetos de Transferencia de Datos (DTOs) para la API.
+- `model/`: Entidades del dominio (JPA).
+- `repository/`: Acceso a datos (JPA).
+- `service/`: Lógica de negocio.
 - `resources/`: Configuración y recursos estáticos.
 
 ## Consideraciones sobre los campos generados automáticamente por la base de datos
