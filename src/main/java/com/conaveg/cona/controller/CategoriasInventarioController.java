@@ -1,6 +1,6 @@
 package com.conaveg.cona.controller;
 
-import com.conaveg.cona.model.CategoriasInventario;
+import com.conaveg.cona.dto.CategoriasInventarioDTO;
 import com.conaveg.cona.service.CategoriasInventarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class CategoriasInventarioController {
     @Operation(summary = "Listar categorías", description = "Obtiene todas las categorías de inventario registradas.")
     @ApiResponse(responseCode = "200", description = "Lista de categorías obtenida correctamente")
     @GetMapping
-    public ResponseEntity<List<CategoriasInventario>> getAllCategoriasInventario() {
-        List<CategoriasInventario> categorias = categoriasInventarioService.getAllCategoriasInventario();
+    public ResponseEntity<List<CategoriasInventarioDTO>> getAllCategoriasInventario() {
+        List<CategoriasInventarioDTO> categorias = categoriasInventarioService.getAllCategoriasInventario();
         return ResponseEntity.ok(categorias);
     }
 
@@ -37,9 +37,9 @@ public class CategoriasInventarioController {
         @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<CategoriasInventario> getCategoriasInventarioById(
+    public ResponseEntity<CategoriasInventarioDTO> getCategoriasInventarioById(
             @Parameter(description = "ID de la categoría a buscar", example = "1") @PathVariable Long id) {
-        CategoriasInventario categoria = categoriasInventarioService.getCategoriasInventarioById(id);
+        CategoriasInventarioDTO categoria = categoriasInventarioService.getCategoriasInventarioById(id);
         if (categoria != null) {
             return ResponseEntity.ok(categoria);
         } else {
@@ -50,10 +50,10 @@ public class CategoriasInventarioController {
     @Operation(summary = "Crear categoría", description = "Crea una nueva categoría de inventario.")
     @ApiResponse(responseCode = "201", description = "Categoría creada exitosamente")
     @PostMapping
-    public ResponseEntity<CategoriasInventario> createCategoriasInventario(
+    public ResponseEntity<CategoriasInventarioDTO> createCategoriasInventario(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto categoría a crear")
-            @RequestBody CategoriasInventario categoria) {
-        CategoriasInventario created = categoriasInventarioService.saveCategoriasInventario(categoria);
+            @RequestBody CategoriasInventarioDTO categoriaDTO) {
+        CategoriasInventarioDTO created = categoriasInventarioService.saveCategoriasInventario(categoriaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -63,11 +63,11 @@ public class CategoriasInventarioController {
         @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<CategoriasInventario> updateCategoriasInventario(
+    public ResponseEntity<CategoriasInventarioDTO> updateCategoriasInventario(
             @Parameter(description = "ID de la categoría a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la categoría")
-            @RequestBody CategoriasInventario categoria) {
-        CategoriasInventario updated = categoriasInventarioService.updateCategoriasInventario(id, categoria);
+            @RequestBody CategoriasInventarioDTO categoriaDTO) {
+        CategoriasInventarioDTO updated = categoriasInventarioService.updateCategoriasInventario(id, categoriaDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
@@ -83,7 +83,7 @@ public class CategoriasInventarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategoriasInventario(
             @Parameter(description = "ID de la categoría a eliminar", example = "1") @PathVariable Long id) {
-        CategoriasInventario categoria = categoriasInventarioService.getCategoriasInventarioById(id);
+        CategoriasInventarioDTO categoria = categoriasInventarioService.getCategoriasInventarioById(id);
         if (categoria != null) {
             categoriasInventarioService.deleteCategoriasInventario(id);
             return ResponseEntity.noContent().build();
