@@ -1,3 +1,21 @@
+## Consideraciones sobre los campos generados automáticamente por la base de datos
+
+Todas las tablas de la base de datos incluyen los siguientes campos estándar:
+
+- `id`
+- `estado`
+- `unique_id`
+- `created_at`
+- `updated_at`
+
+**Importante para el consumo del API:**
+
+- **No es necesario especificar estos campos al crear un registro** (POST). La base de datos los genera automáticamente si no se envían en la petición.
+- **Al actualizar un registro** (PUT), tampoco es necesario enviar estos campos. En particular, el campo `updated_at` se actualiza automáticamente cada vez que se modifica el registro, por lo que no debe ser enviado manualmente.
+- Si se envían estos campos en la petición, la base de datos priorizará sus valores por defecto o los actualizará según corresponda.
+- Esto aplica para todos los recursos del sistema (usuarios, roles, empleados, facturas, etc.).
+
+> **Recomendación:** Desde el frontend o cualquier cliente que consuma el API, omite estos campos en los cuerpos de las peticiones de creación y actualización. Solo debes enviar los datos realmente editables por el usuario.
 # conaveg-backend
 
 Backend API REST para la administración de inventarios, asistencia de personal y asignación de personal a diferentes locaciones de trabajo.
