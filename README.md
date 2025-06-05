@@ -173,7 +173,7 @@ Se utiliza [Conventional Commits](./GuiaConventionalCommits.md) con emojis para 
 ```
 
 ## Licencia
-Este proyecto está bajo la licencia MIT.
+Este proyecto está bajo la licencia Apache 2.0. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ## Documentación automática de la API (Swagger/OpenAPI)
 
