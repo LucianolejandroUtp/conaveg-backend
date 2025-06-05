@@ -1,6 +1,6 @@
 package com.conaveg.cona.controllers;
 
-import com.conaveg.cona.models.Factura;
+import com.conaveg.cona.dto.FacturaDTO;
 import com.conaveg.cona.services.FacturaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class FacturaController {
     @Operation(summary = "Listar facturas", description = "Obtiene todas las facturas registradas en el sistema.")
     @ApiResponse(responseCode = "200", description = "Lista de facturas obtenida correctamente")
     @GetMapping
-    public ResponseEntity<List<Factura>> getAllFacturas() {
-        List<Factura> facturas = facturaService.getAllFacturas();
+    public ResponseEntity<List<FacturaDTO>> getAllFacturas() {
+        List<FacturaDTO> facturas = facturaService.getAllFacturas();
         return ResponseEntity.ok(facturas);
     }
 
@@ -37,9 +37,9 @@ public class FacturaController {
         @ApiResponse(responseCode = "404", description = "Factura no encontrada")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Factura> getFacturaById(
+    public ResponseEntity<FacturaDTO> getFacturaById(
             @Parameter(description = "ID de la factura a buscar", example = "1") @PathVariable Long id) {
-        Factura factura = facturaService.getFacturaById(id);
+        FacturaDTO factura = facturaService.getFacturaById(id);
         if (factura != null) {
             return ResponseEntity.ok(factura);
         } else {
@@ -50,10 +50,10 @@ public class FacturaController {
     @Operation(summary = "Crear factura", description = "Registra una nueva factura de compra o servicio.")
     @ApiResponse(responseCode = "201", description = "Factura creada exitosamente")
     @PostMapping
-    public ResponseEntity<Factura> createFactura(
+    public ResponseEntity<FacturaDTO> createFactura(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto factura a crear")
-            @RequestBody Factura factura) {
-        Factura created = facturaService.saveFactura(factura);
+            @RequestBody FacturaDTO facturaDTO) {
+        FacturaDTO created = facturaService.saveFactura(facturaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -63,11 +63,11 @@ public class FacturaController {
         @ApiResponse(responseCode = "404", description = "Factura no encontrada")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Factura> updateFactura(
+    public ResponseEntity<FacturaDTO> updateFactura(
             @Parameter(description = "ID de la factura a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la factura")
-            @RequestBody Factura factura) {
-        Factura updated = facturaService.updateFactura(id, factura);
+            @RequestBody FacturaDTO facturaDTO) {
+        FacturaDTO updated = facturaService.updateFactura(id, facturaDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
@@ -83,7 +83,7 @@ public class FacturaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFactura(
             @Parameter(description = "ID de la factura a eliminar", example = "1") @PathVariable Long id) {
-        Factura factura = facturaService.getFacturaById(id);
+        FacturaDTO factura = facturaService.getFacturaById(id);
         if (factura != null) {
             facturaService.deleteFactura(id);
             return ResponseEntity.noContent().build();

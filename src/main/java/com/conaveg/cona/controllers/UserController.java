@@ -1,6 +1,7 @@
 package com.conaveg.cona.controllers;
 
-import com.conaveg.cona.models.User;
+import com.conaveg.cona.dto.UserDTO;
+import com.conaveg.cona.dto.UserCreateDTO;
 import com.conaveg.cona.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +27,8 @@ public class UserController {
     @Operation(summary = "Listar usuarios", description = "Obtiene todos los usuarios registrados en el sistema.")
     @ApiResponse(responseCode = "200", description = "Lista de usuarios obtenida correctamente")
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
@@ -37,9 +38,9 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(
+    public ResponseEntity<UserDTO> getUserById(
             @Parameter(description = "ID del usuario a buscar", example = "1") @PathVariable Long id) {
-        User user = userService.getUserById(id);
+        UserDTO user = userService.getUserById(id);
         if (user != null) {
             return ResponseEntity.ok(user);
         } else {
@@ -50,10 +51,10 @@ public class UserController {
     @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario en el sistema. El usuario debe tener un rol asignado.")
     @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente")
     @PostMapping
-    public ResponseEntity<User> createUser(
+    public ResponseEntity<UserDTO> createUser(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto usuario a crear")
-            @RequestBody User user) {
-        User created = userService.saveUser(user);
+            @RequestBody UserCreateDTO userCreateDTO) {
+        UserDTO created = userService.saveUser(userCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -63,11 +64,11 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserDTO> updateUser(
             @Parameter(description = "ID del usuario a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del usuario")
-            @RequestBody User user) {
-        User updated = userService.updateUser(id, user);
+            @RequestBody UserCreateDTO userCreateDTO) {
+        UserDTO updated = userService.updateUser(id, userCreateDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
@@ -83,7 +84,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @Parameter(description = "ID del usuario a eliminar", example = "1") @PathVariable Long id) {
-        User user = userService.getUserById(id);
+        UserDTO user = userService.getUserById(id);
         if (user != null) {
             userService.deleteUser(id);
             return ResponseEntity.noContent().build();
