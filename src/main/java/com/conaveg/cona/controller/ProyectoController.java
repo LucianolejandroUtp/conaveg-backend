@@ -1,6 +1,6 @@
 package com.conaveg.cona.controller;
 
-import com.conaveg.cona.model.Proyecto;
+import com.conaveg.cona.dto.ProyectoDTO;
 import com.conaveg.cona.service.ProyectoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class ProyectoController {
     @Operation(summary = "Listar proyectos", description = "Obtiene todos los proyectos registrados en el sistema.")
     @ApiResponse(responseCode = "200", description = "Lista de proyectos obtenida correctamente")
     @GetMapping
-    public ResponseEntity<List<Proyecto>> getAllProyectos() {
-        List<Proyecto> proyectos = proyectoService.getAllProyectos();
+    public ResponseEntity<List<ProyectoDTO>> getAllProyectos() {
+        List<ProyectoDTO> proyectos = proyectoService.getAllProyectos();
         return ResponseEntity.ok(proyectos);
     }
 
@@ -37,9 +37,9 @@ public class ProyectoController {
         @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Proyecto> getProyectoById(
+    public ResponseEntity<ProyectoDTO> getProyectoById(
             @Parameter(description = "ID del proyecto a buscar", example = "1") @PathVariable Long id) {
-        Proyecto proyecto = proyectoService.getProyectoById(id);
+        ProyectoDTO proyecto = proyectoService.getProyectoById(id);
         if (proyecto != null) {
             return ResponseEntity.ok(proyecto);
         } else {
@@ -50,10 +50,10 @@ public class ProyectoController {
     @Operation(summary = "Crear proyecto", description = "Crea un nuevo proyecto o locación de trabajo.")
     @ApiResponse(responseCode = "201", description = "Proyecto creado exitosamente")
     @PostMapping
-    public ResponseEntity<Proyecto> createProyecto(
+    public ResponseEntity<ProyectoDTO> createProyecto(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto proyecto a crear")
-            @RequestBody Proyecto proyecto) {
-        Proyecto created = proyectoService.saveProyecto(proyecto);
+            @RequestBody ProyectoDTO proyectoDTO) {
+        ProyectoDTO created = proyectoService.saveProyecto(proyectoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -63,11 +63,11 @@ public class ProyectoController {
         @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Proyecto> updateProyecto(
+    public ResponseEntity<ProyectoDTO> updateProyecto(
             @Parameter(description = "ID del proyecto a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del proyecto")
-            @RequestBody Proyecto proyecto) {
-        Proyecto updated = proyectoService.updateProyecto(id, proyecto);
+            @RequestBody ProyectoDTO proyectoDTO) {
+        ProyectoDTO updated = proyectoService.updateProyecto(id, proyectoDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
@@ -83,7 +83,7 @@ public class ProyectoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProyecto(
             @Parameter(description = "ID del proyecto a eliminar", example = "1") @PathVariable Long id) {
-        Proyecto proyecto = proyectoService.getProyectoById(id);
+        ProyectoDTO proyecto = proyectoService.getProyectoById(id);
         if (proyecto != null) {
             proyectoService.deleteProyecto(id);
             return ResponseEntity.noContent().build();
