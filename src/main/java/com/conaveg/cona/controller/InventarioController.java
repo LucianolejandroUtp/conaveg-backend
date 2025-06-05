@@ -1,6 +1,6 @@
 package com.conaveg.cona.controller;
 
-import com.conaveg.cona.model.Inventario;
+import com.conaveg.cona.dto.InventarioDTO;
 import com.conaveg.cona.service.InventarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class InventarioController {
     @Operation(summary = "Listar inventario", description = "Obtiene todos los productos registrados en el inventario.")
     @ApiResponse(responseCode = "200", description = "Lista de inventario obtenida correctamente")
     @GetMapping
-    public ResponseEntity<List<Inventario>> getAllInventario() {
-        List<Inventario> inventario = inventarioService.getAllInventario();
+    public ResponseEntity<List<InventarioDTO>> getAllInventario() {
+        List<InventarioDTO> inventario = inventarioService.getAllInventario();
         return ResponseEntity.ok(inventario);
     }
 
@@ -37,9 +37,9 @@ public class InventarioController {
         @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Inventario> getInventarioById(
+    public ResponseEntity<InventarioDTO> getInventarioById(
             @Parameter(description = "ID del producto a buscar", example = "1") @PathVariable Long id) {
-        Inventario inv = inventarioService.getInventarioById(id);
+        InventarioDTO inv = inventarioService.getInventarioById(id);
         if (inv != null) {
             return ResponseEntity.ok(inv);
         } else {
@@ -50,10 +50,10 @@ public class InventarioController {
     @Operation(summary = "Crear producto", description = "Agrega un nuevo producto o bien al inventario.")
     @ApiResponse(responseCode = "201", description = "Producto creado exitosamente")
     @PostMapping
-    public ResponseEntity<Inventario> createInventario(
+    public ResponseEntity<InventarioDTO> createInventario(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto producto a crear")
-            @RequestBody Inventario inventario) {
-        Inventario created = inventarioService.saveInventario(inventario);
+            @RequestBody InventarioDTO inventarioDTO) {
+        InventarioDTO created = inventarioService.saveInventario(inventarioDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -63,11 +63,11 @@ public class InventarioController {
         @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Inventario> updateInventario(
+    public ResponseEntity<InventarioDTO> updateInventario(
             @Parameter(description = "ID del producto a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del producto")
-            @RequestBody Inventario inventario) {
-        Inventario updated = inventarioService.updateInventario(id, inventario);
+            @RequestBody InventarioDTO inventarioDTO) {
+        InventarioDTO updated = inventarioService.updateInventario(id, inventarioDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
@@ -83,7 +83,7 @@ public class InventarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInventario(
             @Parameter(description = "ID del producto a eliminar", example = "1") @PathVariable Long id) {
-        Inventario inv = inventarioService.getInventarioById(id);
+        InventarioDTO inv = inventarioService.getInventarioById(id);
         if (inv != null) {
             inventarioService.deleteInventario(id);
             return ResponseEntity.noContent().build();
