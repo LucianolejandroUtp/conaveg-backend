@@ -1,3 +1,46 @@
+
+# conaveg-backend
+
+
+Backend API REST para la administración de inventarios, asistencia de personal y asignación de personal a diferentes locaciones de trabajo.
+
+
+
+---
+
+## Descripción General
+Sistema backend desarrollado en Spring Boot para gestionar inventarios, asistencia de empleados y asignación de personal a proyectos/locaciones.
+
+## Requisitos
+- Java 21
+- Maven
+- MariaDB
+
+## Instalación
+1. Clona el repositorio.
+2. Configura la base de datos MariaDB y actualiza las credenciales en `src/main/resources/application.properties`.
+3. Ejecuta:
+   ```bash
+   mvn clean install
+   mvn spring-boot:run
+   ```
+
+## Configuración de Base de Datos
+El sistema utiliza MariaDB. Ejemplo de configuración en `application.properties`:
+```properties
+spring.datasource.url=jdbc:mariadb://localhost:3306/conaveg_db
+spring.datasource.username=TU_USUARIO
+spring.datasource.password=TU_PASSWORD
+```
+Asegúrate de tener la base de datos creada antes de iniciar la aplicación.
+
+## Estructura del Proyecto
+- `controllers/`: Endpoints REST.
+- `services/`: Lógica de negocio.
+- `repositories/`: Acceso a datos (JPA).
+- `models/`: Entidades del dominio.
+- `resources/`: Configuración y recursos estáticos.
+
 ## Consideraciones sobre los campos generados automáticamente por la base de datos
 
 Todas las tablas de la base de datos incluyen los siguientes campos estándar:
@@ -16,14 +59,6 @@ Estos campos son gestionados automáticamente por la base de datos y **no es nec
 > **Recomendación:** Omite estos campos en los cuerpos de las peticiones de creación y actualización. Solo debes enviar los datos realmente editables por el usuario.
 
 Esta consideración aplica para todos los recursos del sistema (usuarios, roles, empleados, facturas, etc.).
-
-# conaveg-backend
-
-Backend API REST para la administración de inventarios, asistencia de personal y asignación de personal a diferentes locaciones de trabajo.
-
-## Tabla de Contenidos
-- [Descripción General](#descripción-general)
-- [Requisitos](#requisitos)
 - [Instalación](#instalación)
 - [Configuración de Base de Datos](#configuración-de-base-de-datos)
 - [Estructura del Proyecto](#estructura-del-proyecto)
