@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.conaveg.cona.model.User;
@@ -17,6 +18,9 @@ import com.conaveg.cona.dto.RolDTO;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -24,13 +28,15 @@ public class UserService {
 
     public UserDTO getUserById(Long id) {
         return userRepository.findById(id).map(this::toDTO).orElse(null);
-    }
-
-    public UserDTO saveUser(UserCreateDTO userCreateDTO) {
+    }    public UserDTO saveUser(UserCreateDTO userCreateDTO) {
         User user = new User();
         user.setUserName(userCreateDTO.getUserName());
         user.setEmail(userCreateDTO.getEmail());
-        user.setPassword(userCreateDTO.getPassword());
+        
+        // Cifrar contraseña con BCrypt antes de guardar
+        String encryptedPassword = passwordEncoder.encode(userCreateDTO.getPassword());
+        user.setPassword(encryptedPassword);
+        
         if (userCreateDTO.getRoleId() != null) {
             Rol rol = new Rol();
             rol.setId(userCreateDTO.getRoleId());
@@ -38,17 +44,19 @@ public class UserService {
         }
         User saved = userRepository.save(user);
         return toDTO(saved);
-    }
-
-    public UserDTO updateUser(Long id, UserCreateDTO userCreateDTO) {
+    }    public UserDTO updateUser(Long id, UserCreateDTO userCreateDTO) {
         if (userRepository.existsById(id)) {
             User user = userRepository.findById(id).orElse(null);
             if (user == null) return null;
             user.setUserName(userCreateDTO.getUserName());
             user.setEmail(userCreateDTO.getEmail());
-            if (userCreateDTO.getPassword() != null) {
-                user.setPassword(userCreateDTO.getPassword());
+            
+            // Solo cifrar y actualizar contraseña si se proporciona una nueva
+            if (userCreateDTO.getPassword() != null && !userCreateDTO.getPassword().trim().isEmpty()) {
+                String encryptedPassword = passwordEncoder.encode(userCreateDTO.getPassword());
+                user.setPassword(encryptedPassword);
             }
+            
             if (userCreateDTO.getRoleId() != null) {
                 Rol rol = new Rol();
                 rol.setId(userCreateDTO.getRoleId());
@@ -62,6 +70,18 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    /**
+     * Valida una contraseña en texto plano contra el hash almacenado
+     * Útil para futuras funcionalidades de login/autenticación
+     * 
+     * @param rawPassword Contraseña en texto plano
+     * @param encodedPassword Hash almacenado en base de datos
+     * @return true si la contraseña coincide, false si no
+     */
+    public boolean validatePassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
     private UserDTO toDTO(User user) {

@@ -151,15 +151,43 @@ public class User {
 #### Ejemplo de request para crear un User
 ```json
 {
-  "role": { "id": 1 },
   "userName": "jdoe",
   "email": "jdoe@example.com",
-  "password": "12345678"
+  "password": "MiPassword123",
+  "roleId": 1
 }
 ```
 
+> **Nota sobre contraseñas**: La contraseña debe tener al menos 8 caracteres, incluyendo una letra minúscula, una mayúscula y un número. Se cifra automáticamente con BCrypt antes de almacenarla.
+
 ## Seguridad
 El proyecto utiliza Spring Security, pero actualmente está deshabilitado para facilitar el desarrollo. Se recomienda habilitarlo antes de producción.
+
+### Cifrado de Contraseñas
+El sistema implementa cifrado seguro de contraseñas usando **BCrypt**:
+
+- **Almacenamiento**: Las contraseñas se almacenan cifradas en la base de datos usando BCrypt con salt automático.
+- **Creación de usuarios**: Al crear un usuario, la contraseña se cifra automáticamente antes de guardarla.
+- **Actualización**: Al actualizar un usuario, si se proporciona una nueva contraseña, se cifra antes de actualizarla.
+- **Validación**: El servicio incluye un método `validatePassword()` para futuras implementaciones de autenticación.
+
+#### Características de BCrypt:
+- **Salt automático**: Cada contraseña tiene su propio salt único.
+- **Resistente a ataques**: Algoritmo lento que dificulta ataques de fuerza bruta.
+- **Estándar de la industria**: Ampliamente adoptado y probado.
+
+#### Ejemplo de uso:
+```java
+// En UserService, las contraseñas se cifran automáticamente
+UserCreateDTO userDto = new UserCreateDTO();
+userDto.setPassword("miContraseñaSegura123"); // Texto plano
+userService.saveUser(userDto); // Se guarda cifrada en BD
+
+// Para validar contraseñas (útil para login)
+boolean isValid = userService.validatePassword("miContraseñaSegura123", hashedPassword);
+```
+
+> **Importante**: Las contraseñas nunca se almacenan en texto plano. Una vez cifradas, no pueden ser "descifradas", solo validadas.
 
 ## Pruebas
 - Puedes probar los endpoints con Postman, Insomnia o curl.

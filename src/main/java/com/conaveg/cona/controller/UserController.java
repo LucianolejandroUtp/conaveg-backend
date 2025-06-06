@@ -3,6 +3,7 @@ package com.conaveg.cona.controller;
 import com.conaveg.cona.dto.UserDTO;
 import com.conaveg.cona.dto.UserCreateDTO;
 import com.conaveg.cona.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,19 +47,15 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario en el sistema. El usuario debe tener un rol asignado.")
+    }    @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario en el sistema. El usuario debe tener un rol asignado. Las contraseñas se cifran automáticamente con BCrypt.")
     @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente")
     @PostMapping
     public ResponseEntity<UserDTO> createUser(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Objeto usuario a crear")
-            @RequestBody UserCreateDTO userCreateDTO) {
+            @Valid @RequestBody UserCreateDTO userCreateDTO) {
         UserDTO created = userService.saveUser(userCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
-    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente.")
+    }    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente. Si se proporciona una nueva contraseña, se cifrará automáticamente.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuario actualizado correctamente"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
@@ -67,7 +64,7 @@ public class UserController {
     public ResponseEntity<UserDTO> updateUser(
             @Parameter(description = "ID del usuario a actualizar", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del usuario")
-            @RequestBody UserCreateDTO userCreateDTO) {
+            @Valid @RequestBody UserCreateDTO userCreateDTO) {
         UserDTO updated = userService.updateUser(id, userCreateDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
