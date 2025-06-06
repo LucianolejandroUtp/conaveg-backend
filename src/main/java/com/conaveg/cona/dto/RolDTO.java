@@ -1,10 +1,15 @@
 package com.conaveg.cona.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RolDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
     private String nombre;
     private String descripcion;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String estado;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String uniqueId;
 
     public RolDTO() {}
