@@ -4,6 +4,7 @@
 Backend API REST para la administración de inventarios, asistencia de personal y asignación de personal a diferentes locaciones de trabajo.
 
 ## 📋 Tabla de Contenidos
+- [📖 Documentación Completa](#-documentación-completa)
 - [Descripción General](#descripción-general)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
@@ -14,7 +15,7 @@ Backend API REST para la administración de inventarios, asistencia de personal 
 - [Ejemplo de Modelos y Endpoints](#ejemplo-de-modelos-y-endpoints)
 - [Seguridad](#seguridad)
 - [Pruebas](#pruebas)
-- [Documentación](#documentación)
+- [📋 Documentación](#-documentación)
 - [Convenciones de Commits](#convenciones-de-commits)
 - [Licencia](#licencia)
 - [Documentación automática de la API (Swagger/OpenAPI)](#documentación-automática-de-la-api-swaggeropenapi)
