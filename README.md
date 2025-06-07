@@ -1,9 +1,9 @@
 
-# conaveg-backend
+# CONA - Sistema de Gestión
 
 Backend API REST para la administración de inventarios, asistencia de personal y asignación de personal a diferentes locaciones de trabajo.
 
-## Tabla de Contenidos
+## 📋 Tabla de Contenidos
 - [Descripción General](#descripción-general)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
@@ -14,9 +14,33 @@ Backend API REST para la administración de inventarios, asistencia de personal 
 - [Ejemplo de Modelos y Endpoints](#ejemplo-de-modelos-y-endpoints)
 - [Seguridad](#seguridad)
 - [Pruebas](#pruebas)
+- [Documentación](#documentación)
 - [Convenciones de Commits](#convenciones-de-commits)
 - [Licencia](#licencia)
 - [Documentación automática de la API (Swagger/OpenAPI)](#documentación-automática-de-la-api-swaggeropenapi)
+
+## 📖 Documentación Completa
+
+Toda la documentación técnica del proyecto está organizada en la carpeta [`docs/`](docs/):
+
+### 📚 Documentos Principales
+- **[📋 Reporte Final del Proyecto](docs/REPORTE_FINAL_PROYECTO.md)** - Resumen ejecutivo completo del proyecto
+- **[📊 Métricas de Rendimiento](docs/PERFORMANCE_METRICS.md)** - Resultados de tests de carga y rendimiento
+- **[🔧 Guía de Conventional Commits](docs/GuiaConventionalCommits.md)** - Estándares para mensajes de commit
+
+### 🔒 Documentación de Seguridad
+- **[🔐 Mejores Prácticas de Seguridad](docs/Security_Best_Practices.md)** - Guía de seguridad
+- **[🔑 Guía de Uso de BCrypt](docs/BCrypt_Usage_Guide.md)** - Implementación de cifrado de contraseñas
+- **[⚡ Guía de Tests de Rendimiento](docs/Performance_Testing_Guide.md)** - Tests de carga y estrés
+
+### 📊 Diagramas y Esquemas
+- **[🏗️ Diagrama de Clases](docs/ClassDiagram.png)** - Estructura de clases del sistema
+- **[🗄️ Diagrama de Base de Datos](docs/DataBaseDiagram.png)** - Esquema de la base de datos
+- **[📦 Diagrama de Paquetes](docs/PackageDiagram.png)** - Organización de paquetes
+- **[💾 Script de Base de Datos](docs/conaveg_database.sql)** - Esquema SQL para MariaDB
+
+### 📖 Índice de Documentación
+- **[📑 Índice General de Documentación](docs/README.md)** - Guía completa con toda la documentación técnica
 
 ---
 
@@ -189,15 +213,26 @@ boolean isValid = userService.validatePassword("miContraseñaSegura123", hashedP
 
 > **Importante**: Las contraseñas nunca se almacenan en texto plano. Una vez cifradas, no pueden ser "descifradas", solo validadas.
 
+## 📋 Documentación
+
+Para información detallada sobre el proyecto, consulta:
+
+- **[📋 Reporte Final Completo](docs/REPORTE_FINAL_PROYECTO.md)** - Estado completo del proyecto con todas las implementaciones
+- **[📚 Documentación Técnica](docs/README.md)** - Guías de desarrollo, seguridad y rendimiento
+- **[📊 Métricas de Rendimiento](docs/PERFORMANCE_METRICS.md)** - Resultados de tests de carga
+- **[🔧 Guía de Commits](docs/GuiaConventionalCommits.md)** - Estándares de mensajes de commit
+
 ## Pruebas
 - Puedes probar los endpoints con Postman, Insomnia o curl.
 - Para ejecutar pruebas automáticas:
   ```bash
   mvn test
   ```
+- **Para pruebas de integración de controllers**: Ver [documentación técnica](docs/README.md)
+- **Para pruebas de rendimiento**: Ver [guía de tests de rendimiento](docs/Performance_Testing_Guide.md)
 
 ## Convenciones de Commits
-Se utiliza [Conventional Commits](./GuiaConventionalCommits.md) con emojis para los mensajes de commit. Ejemplo:
+Se utiliza [Conventional Commits](docs/GuiaConventionalCommits.md) con emojis para los mensajes de commit. Ejemplo:
 ```
 📚 docs: agrega guía de Conventional Commits y emojis
 ```
