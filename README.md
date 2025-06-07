@@ -15,9 +15,9 @@ Backend API REST para la administración de inventarios, asistencia de personal 
 - [Ejemplo de Modelos y Endpoints](#ejemplo-de-modelos-y-endpoints)
 - [Seguridad](#seguridad)
 - [Pruebas](#pruebas)
-- [📋 Documentación](#-documentación)
 - [Convenciones de Commits](#convenciones-de-commits)
 - [Licencia](#licencia)
+- [Documentación automática de la API (Swagger/OpenAPI)](#documentación-automática-de-la-api-swaggeropenapi)
 - [Documentación automática de la API (Swagger/OpenAPI)](#documentación-automática-de-la-api-swaggeropenapi)
 
 ## 📖 Documentación Completa
@@ -214,7 +214,7 @@ boolean isValid = userService.validatePassword("miContraseñaSegura123", hashedP
 
 > **Importante**: Las contraseñas nunca se almacenan en texto plano. Una vez cifradas, no pueden ser "descifradas", solo validadas.
 
-## 📋 Documentación
+## � Enlaces a Documentación Adicional
 
 Para información detallada sobre el proyecto, consulta:
 
