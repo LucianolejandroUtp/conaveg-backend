@@ -4,6 +4,12 @@ Esta carpeta contiene toda la documentación técnica y guías del Sistema de Ge
 
 ## Índice de Documentación
 
+### 🗺️ Planificación y Gestión
+#### [ROADMAP.md](./ROADMAP.md)
+**Roadmap del Proyecto CONAVEG**
+- Avances Logrados
+- Puntos Pendientes y Áreas de Mejora
+
 ### 📚 Guías de Desarrollo
 
 #### [BCrypt_Usage_Guide.md](./BCrypt_Usage_Guide.md)

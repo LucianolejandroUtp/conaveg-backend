@@ -24,6 +24,7 @@ Toda la documentación técnica del proyecto está organizada en la carpeta [`do
 
 ### 📚 Documentos Principales
 - **[📋 Reporte Final del Proyecto](docs/REPORTE_FINAL_PROYECTO.md)** - Resumen ejecutivo completo del proyecto
+- **[🗺️ Roadmap del Proyecto](docs/ROADMAP.md)** - Avances y pendientes del proyecto
 - **[📊 Métricas de Rendimiento](docs/PERFORMANCE_METRICS.md)** - Resultados de tests de carga y rendimiento
 - **[🔧 Guía de Conventional Commits](docs/GuiaConventionalCommits.md)** - Estándares para mensajes de commit
 
