@@ -84,6 +84,17 @@ public class UserService {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
+    /**
+     * Cifra una contraseña usando BCrypt
+     * Útil para tests de rendimiento y validaciones
+     * 
+     * @param rawPassword Contraseña en texto plano
+     * @return Hash BCrypt de la contraseña
+     */
+    public String hashPassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+
     private UserDTO toDTO(User user) {
         Rol rol = user.getRole();
         RolDTO rolDTO = null;
