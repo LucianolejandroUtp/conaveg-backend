@@ -66,12 +66,26 @@ src/
 │   ├── controller/UserController.java  # Endpoints seguros
 │   └── dto/UserCreateDTO.java          # Validaciones
 │
-└── test/java/com/conaveg/cona/performance/
-    ├── BCryptLoadTest.java              # Test creación concurrente
-    ├── PasswordValidationLoadTest.java   # Test validación masiva
-    ├── BCryptMemoryStabilityTest.java   # Test estabilidad memoria
-    ├── BCryptStressTest.java            # Test estrés extremo
-    └── BCryptPerformanceSuite.java      # Suite completa
+└── test/java/com/conaveg/cona/
+    ├── performance/                     # Tests de rendimiento
+    │   ├── BCryptLoadTest.java              # Test creación concurrente
+    │   ├── PasswordValidationLoadTest.java   # Test validación masiva
+    │   ├── BCryptMemoryStabilityTest.java   # Test estabilidad memoria
+    │   ├── BCryptStressTest.java            # Test estrés extremo
+    │   └── BCryptPerformanceSuite.java      # Suite completa
+    │
+    └── controller/                      # Tests de integración ✅ NUEVOS
+        ├── UserControllerIntegrationTest.java
+        ├── EmpleadoControllerIntegrationTest.java
+        ├── ProveedorControllerIntegrationTest.java
+        ├── InventarioControllerIntegrationTest.java
+        ├── ProyectoControllerIntegrationTest.java
+        ├── RolControllerIntegrationTest.java
+        ├── AsistenciaControllerIntegrationTest.java
+        ├── FacturaControllerIntegrationTest.java
+        ├── CategoriasInventarioControllerIntegrationTest.java
+        ├── MovimientosInventarioControllerIntegrationTest.java
+        └── AsignacionesProyectosEmpleadoControllerIntegrationTest.java
 
 PERFORMANCE_METRICS.md           # Resultados y métricas detalladas
 ```
@@ -93,10 +107,31 @@ PERFORMANCE_METRICS.md           # Resultados y métricas detalladas
 ### 3. Tests Comprensivos
 - ✅ Tests unitarios para UserService
 - ✅ Tests de integración para BCryptPasswordEncoder
+- ✅ **Tests de integración para Controllers REST (11 archivos)**
 - ✅ Tests de carga concurrente (500 usuarios simultáneos)
 - ✅ Tests de validación masiva (200 validaciones concurrentes)
 - ✅ Tests de estabilidad de memoria (2 minutos continuo)
 - ✅ Tests de estrés extremo (50 hilos, 60 segundos)
+
+### 3.1 Tests de Integración de Controllers REST ✅ **NUEVOS**
+- ✅ `UserControllerIntegrationTest` - Gestión de usuarios con validaciones
+- ✅ `EmpleadoControllerIntegrationTest` - CRUD de empleados  
+- ✅ `ProveedorControllerIntegrationTest` - Gestión de proveedores
+- ✅ `InventarioControllerIntegrationTest` - Control de inventario
+- ✅ `ProyectoControllerIntegrationTest` - Administración de proyectos
+- ✅ `RolControllerIntegrationTest` - Gestión de roles y permisos
+- ✅ `AsistenciaControllerIntegrationTest` - Control de asistencias
+- ✅ `FacturaControllerIntegrationTest` - Facturación y ventas
+- ✅ `CategoriasInventarioControllerIntegrationTest` - Categorización
+- ✅ `MovimientosInventarioControllerIntegrationTest` - Trazabilidad
+- ✅ `AsignacionesProyectosEmpleadoControllerIntegrationTest` - Asignaciones
+
+**Tecnologías utilizadas:**
+- `@WebMvcTest` para tests focalizados en controllers
+- `MockMvc` para simulación de peticiones HTTP
+- `@MockBean` para mocking de servicios
+- Validación de respuestas JSON y códigos HTTP
+- Cobertura de casos de éxito y manejo de errores
 
 ### 4. Documentación Completa
 - ✅ Guías detalladas para desarrolladores
@@ -136,7 +171,7 @@ DELETE /api/users/{id} # Eliminar usuario
 
 ## Comandos Rápidos 🚀
 
-### Ejecutar Tests
+### Ejecutar Tests de Rendimiento
 ```bash
 # Test individual de carga
 mvn test -Dtest=BCryptLoadTest
@@ -148,6 +183,28 @@ mvn test -Dtest=PasswordValidationLoadTest
 mvn test -Dtest=BCryptMemoryStabilityTest
 
 # Test de estrés
+mvn test -Dtest=BCryptStressTest
+
+# Suite completa
+mvn test -Dtest=BCryptPerformanceSuite
+
+# Todos los tests de performance
+mvn test -Dtest="com.conaveg.cona.performance.**"
+```
+
+### Ejecutar Tests de Integración de Controllers ✅ **NUEVOS**
+```bash
+# Ejecutar todos los tests de integración de controllers
+mvn test -Dtest="*IntegrationTest"
+
+# Test específico de un controller
+mvn test -Dtest=UserControllerIntegrationTest
+mvn test -Dtest=EmpleadoControllerIntegrationTest
+mvn test -Dtest=InventarioControllerIntegrationTest
+
+# Tests de controllers con patrón
+mvn test -Dtest="*ControllerIntegrationTest"
+```
 mvn test -Dtest=BCryptStressTest
 
 # Suite completa
@@ -192,9 +249,11 @@ mvn test -Dtest=BCryptStressTest -Xmx4g
 
 | Fecha | Versión | Cambios |
 |-------|---------|---------|
+| 2025-06-07 | 1.1 | ✅ **Implementación completa de tests de integración para Controllers REST (11 archivos)** |
 | 2025-06-06 | 1.0 | Implementación inicial completa de BCrypt y documentación |
 
 ---
 **Sistema**: CONA - Sistema de Gestión  
-**Versión**: 1.0  
-**Última actualización**: Junio 2025
+**Versión**: 1.1  
+**Última actualización**: Junio 7, 2025  
+**Estado**: ✅ Tests de Integración de Controllers REST COMPLETADOS
