@@ -250,12 +250,11 @@ class ProveedorControllerIntegrationTest {
         ProveedorDTO proveedorConRucVacio = new ProveedorDTO();
         proveedorConRucVacio.setRuc("");
         proveedorConRucVacio.setRazonSocial("Empresa Sin RUC");
-        
-        ProveedorDTO savedProveedor = new ProveedorDTO();
+          ProveedorDTO savedProveedor = new ProveedorDTO();
         savedProveedor.setId(4L);
         savedProveedor.setRuc("");
         savedProveedor.setRazonSocial("Empresa Sin RUC");
-          when(proveedorService.saveProveedor(any(ProveedorDTO.class))).thenReturn(savedProveedor);
+        when(proveedorService.saveProveedor(any(ProveedorDTO.class))).thenReturn(savedProveedor);
 
         // When & Then
         mockMvc.perform(post("/api/proveedores")
