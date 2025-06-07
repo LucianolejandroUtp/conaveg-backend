@@ -3,7 +3,7 @@
 Backend API REST para la administración de inventarios, asistencia de personal y asignación de personal a diferentes locaciones de trabajo.
 
 ## 📋 Tabla de Contenidos
-- [📖 Documentación Completa](#-documentación-completa)
+- [Documentación Completa](#-documentación-completa)
 - [Descripción General](#descripción-general)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
