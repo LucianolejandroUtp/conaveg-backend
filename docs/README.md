@@ -26,6 +26,20 @@ Esta carpeta contiene toda la documentación técnica y guías del Sistema de Ge
 - Monitoreo y alertas
 - Troubleshooting de tests
 
+#### 🧪 Pruebas de Integración Implementadas
+**Estado actual del testing en el proyecto**
+- **Integración de Contexto Spring**: `ConaApplicationTests.java` con `@SpringBootTest`
+- **Integración con Base de Datos**: Tests de performance con H2 real
+- **Pruebas End-to-End**: UserService → Repository → Database
+- **Tests Faltantes**: Controllers REST (`@WebMvcTest`), Repository (`@DataJpaTest`)
+
+**Tipos de pruebas implementadas:**
+- ✅ Tests unitarios con mocks (UserServiceTest.java)
+- ✅ Tests de integración Spring completa (ConaApplicationTests.java)
+- ✅ Tests de integración con BD (6 archivos performance/)
+- ❌ Tests de integración de controllers (pendiente)
+- ✅ Tests de carga y rendimiento (suite completa)
+
 #### [Security_Best_Practices.md](./Security_Best_Practices.md)
 **Mejores prácticas de seguridad del sistema**
 - Política de contraseñas obligatoria
