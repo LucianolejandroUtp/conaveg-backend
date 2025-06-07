@@ -212,29 +212,6 @@ boolean isValid = userService.validatePassword("miContraseñaSegura123", hashedP
 
 > **Importante**: Las contraseñas nunca se almacenan en texto plano. Una vez cifradas, no pueden ser "descifradas", solo validadas.
 
-## 📖 Documentación Completa
-
-Toda la documentación técnica del proyecto está organizada en la carpeta [`docs/`](docs/):
-
-### 📚 Documentos Principales
-- **[📋 Reporte Final del Proyecto](docs/REPORTE_FINAL_PROYECTO.md)** - Resumen ejecutivo completo del proyecto
-- **[📊 Métricas de Rendimiento](docs/PERFORMANCE_METRICS.md)** - Resultados de tests de carga y rendimiento
-- **[🔧 Guía de Conventional Commits](docs/GuiaConventionalCommits.md)** - Estándares para mensajes de commit
-
-### 🔒 Documentación de Seguridad
-- **[🔐 Mejores Prácticas de Seguridad](docs/Security_Best_Practices.md)** - Guía de seguridad
-- **[🔑 Guía de Uso de BCrypt](docs/BCrypt_Usage_Guide.md)** - Implementación de cifrado de contraseñas
-- **[⚡ Guía de Tests de Rendimiento](docs/Performance_Testing_Guide.md)** - Tests de carga y estrés
-
-### 📊 Diagramas y Esquemas
-- **[🏗️ Diagrama de Clases](docs/ClassDiagram.png)** - Estructura de clases del sistema
-- **[🗄️ Diagrama de Base de Datos](docs/DataBaseDiagram.png)** - Esquema de la base de datos
-- **[📦 Diagrama de Paquetes](docs/PackageDiagram.png)** - Organización de paquetes
-- **[💾 Script de Base de Datos](docs/conaveg_database.sql)** - Esquema SQL para MariaDB
-
-### 📖 Índice de Documentación
-- **[📑 Índice General de Documentación](docs/README.md)** - Guía completa con toda la documentación técnica
-
 ## Pruebas
 - Puedes probar los endpoints con Postman, Insomnia o curl.
 - Para ejecutar pruebas automáticas:
