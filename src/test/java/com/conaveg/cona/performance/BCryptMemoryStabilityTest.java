@@ -209,9 +209,7 @@ public class BCryptMemoryStabilityTest {
         System.out.println("Operaciones de validación: " + validateOps);
         System.out.println("Excepciones: " + exceptions);
         System.out.println("Tiempo promedio por operación: " + 
-                         String.format("%.2f", (totalTime / 1_000_000.0) / totalOps) + "ms");
-
-        // Análisis de memoria
+                         String.format("%.2f", (totalTime / 1_000_000.0) / totalOps) + "ms");        // Análisis de memoria
         double[] memoryUsages = snapshots.stream()
             .mapToDouble(s -> s.usedMemory / (1024.0 * 1024.0))
             .toArray();
@@ -229,13 +227,42 @@ public class BCryptMemoryStabilityTest {
         double avgMemory = totalMemory / memoryUsages.length;
         double memoryRange = maxMemory - minMemory;
         double memoryGrowth = memoryUsages[memoryUsages.length - 1] - memoryUsages[0];
-
-        System.out.println("\nESTADÍSTICAS DE MEMORIA:");
+        
+        // Análisis temporal usando timestamp
+        long testDuration = snapshots.get(snapshots.size() - 1).timestamp - snapshots.get(0).timestamp;
+        double testDurationMinutes = testDuration / (1000.0 * 60.0);
+        
+        // Análisis de capacidad usando maxMemory
+        MemorySnapshot firstSnapshot = snapshots.get(0);
+        double maxCapacityMB = firstSnapshot.maxMemory / (1024.0 * 1024.0);
+        double memoryUtilizationPercent = (avgMemory / maxCapacityMB) * 100;
+        
+        // Análisis de rendimiento usando contadores de operaciones
+        MemorySnapshot lastSnapshot = snapshots.get(snapshots.size() - 1);
+        double operationsPerMinute = lastSnapshot.totalOperations / testDurationMinutes;        System.out.println("\nESTADÍSTICAS DE MEMORIA:");
         System.out.println("- Memoria mínima: " + String.format("%.2f", minMemory) + " MB");
         System.out.println("- Memoria máxima: " + String.format("%.2f", maxMemory) + " MB");
         System.out.println("- Memoria promedio: " + String.format("%.2f", avgMemory) + " MB");
+        System.out.println("- Capacidad máxima JVM: " + String.format("%.2f", maxCapacityMB) + " MB");
+        System.out.println("- Utilización promedio: " + String.format("%.1f", memoryUtilizationPercent) + "%");
         System.out.println("- Rango de memoria: " + String.format("%.2f", memoryRange) + " MB");
         System.out.println("- Crecimiento neto: " + String.format("%.2f", memoryGrowth) + " MB");
+        System.out.println("- Duración del test: " + String.format("%.2f", testDurationMinutes) + " minutos");
+        System.out.println("- Rendimiento: " + String.format("%.1f", operationsPerMinute) + " operaciones/minuto");
+        
+        // Análisis detallado usando todos los campos de MemorySnapshot
+        System.out.println("\nANÁLISIS DETALLADO POR SNAPSHOT:");
+        for (int i = 0; i < Math.min(3, snapshots.size()); i++) {
+            MemorySnapshot s = snapshots.get(i);
+            double memUsedMB = s.usedMemory / (1024.0 * 1024.0);
+            double memTotalMB = s.totalMemory / (1024.0 * 1024.0);
+            System.out.printf("Snapshot %d [%ds]: %.1f/%.1f MB - Ops: %d (Hash: %d, Validate: %d)%n",
+                i + 1, s.timestamp / 1000, memUsedMB, memTotalMB, 
+                s.totalOperations, s.hashOperations, s.validateOperations);
+        }
+        if (snapshots.size() > 3) {
+            System.out.println("... (+" + (snapshots.size() - 3) + " snapshots más)");
+        }
 
         // Análisis de estabilidad
         System.out.println("\nANÁLISIS DE ESTABILIDAD:");
