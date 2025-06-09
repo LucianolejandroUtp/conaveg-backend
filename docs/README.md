@@ -148,10 +148,16 @@ PERFORMANCE_METRICS.md           # Resultados y métricas detalladas
 - ✅ `MovimientosInventarioControllerIntegrationTest` - Trazabilidad
 - ✅ `AsignacionesProyectosEmpleadoControllerIntegrationTest` - Asignaciones
 
+**Resultados de Ejecución Confirmados (Junio 8, 2025):**
+- ✅ **119 tests de controllers** ejecutados exitosamente
+- ✅ **5 tests de servicios** ejecutados exitosamente  
+- ✅ **0 fallos, 0 errores** en toda la suite de tests
+- ✅ **BUILD SUCCESS** completo
+
 **Tecnologías utilizadas:**
 - `@WebMvcTest` para tests focalizados en controllers
 - `MockMvc` para simulación de peticiones HTTP
-- `@MockBean` para mocking de servicios
+- `@MockitoBean` para mocking de servicios (Spring Boot 3.5.0+)
 - Validación de respuestas JSON y códigos HTTP
 - Cobertura de casos de éxito y manejo de errores
 
