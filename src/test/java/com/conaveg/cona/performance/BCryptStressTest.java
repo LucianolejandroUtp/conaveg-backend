@@ -129,14 +129,13 @@ public class BCryptStressTest {
                                     localHashedPasswords.add(hashedPassword);
                                     operationSuccessful = true;
                                     break;
-                                    
-                                case 1: // Validación con hash existente
+                                      case 1: // Validación con hash existente
                                     if (!localHashedPasswords.isEmpty()) {
                                         String existingHash = localHashedPasswords.get(
                                             localHashedPasswords.size() - 1
                                         );
                                         boolean isValid = userService.validatePassword(password, existingHash);
-                                        operationSuccessful = true;
+                                        operationSuccessful = isValid; // Usar el resultado de la validación
                                     } else {
                                         // Fallback: crear hash
                                         String newHash = userService.hashPassword(password);
@@ -282,14 +281,35 @@ public class BCryptStressTest {
             System.out.println("- Tiempo de respuesta promedio: " + String.format("%.2f", avgResponseTime) + "ms");
             System.out.println("- Tiempo de respuesta mínimo: " + String.format("%.2f", minResponse / 1_000_000.0) + "ms");
             System.out.println("- Tiempo de respuesta máximo: " + String.format("%.2f", maxResponse / 1_000_000.0) + "ms");
-        }
-
-        // Análisis de memoria si hay snapshots
+        }        // Análisis de memoria si hay snapshots
         if (!snapshots.isEmpty()) {
             System.out.println("\nUSO DE MEMORIA:");
             StressMetrics lastSnapshot = snapshots.get(snapshots.size() - 1);
             System.out.println("- Memoria final: " + lastSnapshot.usedMemory + "MB / " + lastSnapshot.maxMemory + "MB");
             System.out.println("- Porcentaje de uso: " + String.format("%.1f", (lastSnapshot.usedMemory * 100.0) / lastSnapshot.maxMemory) + "%");
+            
+            // Análisis detallado usando todos los campos de StressMetrics
+            System.out.println("\nPROGRESIÓN DEL TEST:");
+            for (int i = 0; i < Math.min(5, snapshots.size()); i++) {
+                StressMetrics s = snapshots.get(i);
+                System.out.printf("T+%02ds: %d ops (%.1f/s) | Success: %d | Fails: %d | Errors: %d | Mem: %dMB%n",
+                    s.elapsedSeconds, s.totalOperations, s.operationsPerSecond,
+                    s.successfulOperations, s.failedOperations, s.exceptions, s.usedMemory);
+            }
+            if (snapshots.size() > 5) {
+                System.out.println("... (+" + (snapshots.size() - 5) + " snapshots más)");
+            }
+            
+            // Análisis de tendencias
+            if (snapshots.size() > 2) {
+                StressMetrics firstSnapshot = snapshots.get(0);
+                double throughputEvolution = lastSnapshot.operationsPerSecond - firstSnapshot.operationsPerSecond;
+                int errorEvolution = lastSnapshot.exceptions - firstSnapshot.exceptions;
+                
+                System.out.println("\nTENDENCIAS:");
+                System.out.println("- Evolución del throughput: " + String.format("%+.1f", throughputEvolution) + " ops/s");
+                System.out.println("- Evolución de errores: " + String.format("%+d", errorEvolution) + " errores");
+            }
         }
 
         // Evaluación de estabilidad
