@@ -22,17 +22,18 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    /**
+    }    /**
      * Configuración de filtros de seguridad
-     * Por ahora permite acceso libre a todos los endpoints (API REST sin autenticación)
+     * Permite acceso libre a endpoints de autenticación, otros endpoints requieren revisión futura
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // Permitir acceso a todos los endpoints
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a endpoints de autenticación
+                .anyRequest().permitAll() // Por ahora permitir acceso a todos los endpoints
+            )
             .build();
     }
 }
