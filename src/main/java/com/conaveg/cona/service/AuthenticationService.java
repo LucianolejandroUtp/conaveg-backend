@@ -64,16 +64,28 @@ public class AuthenticationService {
     public boolean validateToken(String token) {
         return jwtUtil.validateToken(token);
     }
-    
-    /**
-     * Obtiene información del usuario desde un token
+      /**
+     * Obtiene información del usuario desde un token (versión optimizada)
      */
     public UserDTO getUserFromToken(String token) {
         if (!jwtUtil.validateToken(token)) {
             throw new RuntimeException("Token inválido");
         }
         
-        String email = jwtUtil.getEmailFromToken(token);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        UserDTO user = userService.getUserById(userId);
+        
+        if (user == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        
+        return user;
+    }
+    
+    /**
+     * Obtiene información básica del usuario por email (para el filtro JWT)
+     */
+    public UserDTO getUserByEmail(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         
         if (userOptional.isEmpty()) {

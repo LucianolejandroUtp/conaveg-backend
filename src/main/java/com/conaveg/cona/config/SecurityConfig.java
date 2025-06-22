@@ -1,11 +1,16 @@
 package com.conaveg.cona.config;
 
+import com.conaveg.cona.security.JwtAuthenticationEntryPoint;
+import com.conaveg.cona.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Configuración de seguridad para el proyecto CONAVEG
@@ -14,6 +19,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     /**
      * Bean para cifrado de contraseñas usando BCrypt
@@ -23,17 +34,27 @@ public class SecurityConfig {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }    /**
-     * Configuración de filtros de seguridad
-     * Permite acceso libre a endpoints de autenticación, otros endpoints requieren revisión futura
+     * Configuración de filtros de seguridad con middleware JWT
+     * Implementa autenticación automática y protección de endpoints
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Sin estado (stateless)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a endpoints de autenticación
-                .anyRequest().permitAll() // Por ahora permitir acceso a todos los endpoints
+                // Endpoints públicos - NO requieren autenticación
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/error").permitAll()
+                // Todos los demás endpoints REQUIEREN autenticación
+                .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint) // Manejo de errores 401
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Agregar filtro JWT
             .build();
     }
 }
