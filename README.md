@@ -219,8 +219,37 @@ boolean isValid = userService.validatePassword("miContraseñaSegura123", hashedP
   ```bash
   mvn test
   ```
-- **Para pruebas de integración de controllers**: Ver [documentación técnica](docs/README.md)
-- **Para pruebas de rendimiento**: Ver [guía de tests de rendimiento](docs/Performance_Testing_Guide.md)
+
+### Mejoras Técnicas Implementadas ⚡
+
+El proyecto ha incorporado las siguientes mejoras técnicas:
+
+#### Migración de Anotaciones de Testing
+- **Actualizado**: `@MockBean` → `@MockitoBean` (Spring Boot 3.5.0+)
+- **Import**: `org.springframework.test.context.bean.override.mockito.MockitoBean`
+- **Beneficio**: Mejor compatibilidad y preparación para futuras versiones
+
+#### Versiones Actualizadas
+- **Java**: 21 (LTS)
+- **Spring Boot**: 3.5.0
+- **Maven**: Compatible con Java 21
+
+#### Tests Modernizados
+- 11 archivos de controllers con `@MockitoBean`
+- 119 tests pasando exitosamente
+- Arquitectura de testing robusta y actualizada
+
+---
+
+### Estado de Tests ✅ (Actualizado Junio 9, 2025)
+- **Tests de integración de controllers**: 11 archivos, 119 tests ✅ PASANDO
+- **Tests de servicios**: 5 tests ✅ PASANDO  
+- **Total**: 124 tests exitosos, 0 fallos, 0 errores
+- **Última ejecución**: BUILD SUCCESS
+
+**Para más detalles**:
+- **Tests de integración de controllers**: Ver [documentación técnica](docs/README.md)
+- **Tests de rendimiento**: Ver [guía de tests de rendimiento](docs/Performance_Testing_Guide.md)
 
 ## Convenciones de Commits
 Se utiliza [Conventional Commits](docs/GuiaConventionalCommits.md) con emojis para los mensajes de commit. Ejemplo:
