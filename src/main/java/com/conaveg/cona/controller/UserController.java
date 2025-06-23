@@ -36,15 +36,13 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
-    }
-
-    @Operation(summary = "Obtener usuario por ID", description = "Obtiene un usuario específico. Los administradores pueden ver cualquier usuario, otros usuarios solo pueden ver su propia información.")
+    }    @Operation(summary = "Obtener usuario por ID", description = "Obtiene un usuario específico. Los administradores pueden ver cualquier usuario, gerentes/empleados/usuarios solo pueden ver su propia información.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado - Solo puedes ver tu propia información"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    @PreAuthorize("hasRole('ADMIN') or @authorizationService.isOwnerOrAdmin(#id)")
+    @PreAuthorize("hasRole('ADMIN') or (hasAnyRole('GERENTE','EMPLEADO','USER') and @authorizationService.isOwnerOrAdmin(#id))")
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(
             @Parameter(description = "ID del usuario a buscar", example = "1") @PathVariable Long id) {
@@ -66,15 +64,13 @@ public class UserController {
             @Valid @RequestBody UserCreateDTO userCreateDTO) {
         UserDTO created = userService.saveUser(userCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
-    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente. Los administradores pueden actualizar cualquier usuario, otros usuarios solo pueden actualizar su propia información.")
+    }    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente. Los administradores pueden actualizar cualquier usuario, gerentes/empleados/usuarios solo pueden actualizar su propia información.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuario actualizado exitosamente"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado - Solo puedes actualizar tu propia información"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    @PreAuthorize("hasRole('ADMIN') or @authorizationService.isOwnerOrAdmin(#id)")
+    @PreAuthorize("hasRole('ADMIN') or (hasAnyRole('GERENTE','EMPLEADO','USER') and @authorizationService.isOwnerOrAdmin(#id))")
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(
             @Parameter(description = "ID del usuario a actualizar", example = "1") @PathVariable Long id,

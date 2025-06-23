@@ -26,7 +26,7 @@ public class EmpleadoController {
     @Autowired
     private EmpleadoService empleadoService;    @Operation(summary = "Listar empleados", description = "Obtiene todos los empleados registrados en el sistema.")
     @ApiResponse(responseCode = "200", description = "Lista de empleados obtenida correctamente")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLEADO')")
     @GetMapping
     public ResponseEntity<List<EmpleadoDTO>> getAllEmpleados() {
         List<EmpleadoDTO> empleados = empleadoService.getAllEmpleados();
@@ -36,7 +36,7 @@ public class EmpleadoController {
         @ApiResponse(responseCode = "200", description = "Empleado encontrado"),
         @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
     })
-    @PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE') or @authorizationService.isCurrentUser(#id)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLEADO')")
     @GetMapping("/{id}")
     public ResponseEntity<EmpleadoDTO> getEmpleadoById(
             @Parameter(description = "ID del empleado a buscar", example = "1") @PathVariable Long id) {
