@@ -35,6 +35,11 @@ public class SecurityAuditService {
         ACCOUNT_UNLOCKED("ACCOUNT_UNLOCKED"),
         TOKEN_REFRESH("TOKEN_REFRESH"),
         TOKEN_REFRESH_FAILED("TOKEN_REFRESH_FAILED"),
+        TOKEN_REFRESH_SUCCESS("TOKEN_REFRESH_SUCCESS"),
+        TOKEN_REFRESH_INVALID("TOKEN_REFRESH_INVALID"),
+        TOKEN_REFRESH_OUT_OF_WINDOW("TOKEN_REFRESH_OUT_OF_WINDOW"),
+        TOKEN_REFRESH_RATE_LIMITED("TOKEN_REFRESH_RATE_LIMITED"),
+        TOKEN_REFRESH_ERROR("TOKEN_REFRESH_ERROR"),
         SUSPICIOUS_ACTIVITY("SUSPICIOUS_ACTIVITY"),
         UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS"),
         PERMISSION_DENIED("PERMISSION_DENIED"),
@@ -56,7 +61,9 @@ public class SecurityAuditService {
         LOW("LOW"),
         MEDIUM("MEDIUM"),
         HIGH("HIGH"),
-        CRITICAL("CRITICAL");
+        CRITICAL("CRITICAL"),
+        INFO("INFO"),
+        WARNING("WARNING");
 
         private final String value;
 
@@ -326,5 +333,24 @@ public class SecurityAuditService {
         public long getTotalCount() { 
             return lowSeverityCount + mediumSeverityCount + highSeverityCount + criticalSeverityCount; 
         }
+    }
+
+    /**
+     * Registra un evento de seguridad simplificado (para refresh tokens)
+     */
+    public void logSecurityEvent(String eventType, String description, String ipAddress, String email, boolean success) {
+        EventType type;
+        try {
+            type = EventType.valueOf(eventType);
+        } catch (IllegalArgumentException e) {
+            // Si no existe el tipo, usar un tipo genérico
+            type = success ? EventType.DATA_ACCESS : EventType.SYSTEM_ERROR;
+        }
+        
+        // Usar severidades más cortas para evitar truncamiento
+        Severity severity = success ? Severity.LOW : Severity.MEDIUM;
+        
+        // Llamar al método principal con los parámetros en el orden correcto
+        logSecurityEvent(type, null, email != null ? email : "unknown", ipAddress != null ? ipAddress : "unknown", "API", description, severity);
     }
 }

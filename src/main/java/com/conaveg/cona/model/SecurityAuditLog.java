@@ -3,7 +3,6 @@ package com.conaveg.cona.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -47,7 +46,6 @@ public class SecurityAuditLog {
     private String userAgent;
 
     @NotNull
-    @CreationTimestamp
     @Column(name = "timestamp", nullable = false, updatable = false)
     private LocalDateTime timestamp;
 
@@ -56,12 +54,14 @@ public class SecurityAuditLog {
     private String details;
 
     @NotNull
-    @Size(max = 20)
-    @Column(name = "severity", nullable = false, length = 20)
+    @Size(max = 50)
+    @Column(name = "severity", nullable = false, length = 50)
     private String severity;
 
     // Constructores
-    public SecurityAuditLog() {}
+    public SecurityAuditLog() {
+        this.timestamp = LocalDateTime.now(); // Establecer timestamp en constructor
+    }
 
     public SecurityAuditLog(String eventType, Long userId, String email, String ipAddress,
                            String userAgent, String details, String severity) {
@@ -72,6 +72,14 @@ public class SecurityAuditLog {
         this.userAgent = userAgent;
         this.details = details;
         this.severity = severity;
+        this.timestamp = LocalDateTime.now(); // Establecer timestamp en constructor
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.timestamp == null) {
+            this.timestamp = LocalDateTime.now();
+        }
     }
 
     // Getters y setters

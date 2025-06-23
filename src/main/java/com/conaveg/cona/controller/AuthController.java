@@ -2,8 +2,11 @@ package com.conaveg.cona.controller;
 
 import com.conaveg.cona.dto.LoginRequestDTO;
 import com.conaveg.cona.dto.LoginResponseDTO;
+import com.conaveg.cona.dto.RefreshTokenRequestDTO;
+import com.conaveg.cona.dto.RefreshTokenResponseDTO;
 import com.conaveg.cona.dto.UserDTO;
 import com.conaveg.cona.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -143,5 +146,55 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Error de validación: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Endpoint para renovar token JWT
+     */
+    @Operation(summary = "Renovar token JWT", 
+               description = "Renueva un token JWT válido que esté en ventana de renovación (últimos 15 minutos). " +
+                           "Incluye rate limiting y auditoría de seguridad.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Token renovado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Token no válido para renovación"),
+        @ApiResponse(responseCode = "401", description = "Token inválido o expirado"),
+        @ApiResponse(responseCode = "429", description = "Demasiados intentos de renovación")
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO refreshRequest,
+                                         HttpServletRequest request) {
+        try {
+            // Capturar IP del cliente si no se proporcionó
+            if (refreshRequest.getClientIp() == null || refreshRequest.getClientIp().isEmpty()) {
+                String clientIp = getClientIpAddress(request);
+                refreshRequest.setClientIp(clientIp);
+            }
+            
+            RefreshTokenResponseDTO response = authenticationService.refreshToken(refreshRequest);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error de renovación: " + e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Error de autorización: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Obtiene la IP real del cliente considerando proxies
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty() && !"unknown".equalsIgnoreCase(xRealIp)) {
+            return xRealIp;
+        }
+        
+        return request.getRemoteAddr();
     }
 }

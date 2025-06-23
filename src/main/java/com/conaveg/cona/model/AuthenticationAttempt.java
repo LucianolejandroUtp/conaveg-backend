@@ -49,6 +49,10 @@ public class AuthenticationAttempt {
     @Column(name = "failure_reason", length = 500)
     private String failureReason;
 
+    @Size(max = 50)
+    @Column(name = "attempt_type", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'LOGIN'")
+    private String attemptType = "LOGIN";
+
     // Constructores
     public AuthenticationAttempt() {}
 
@@ -59,6 +63,7 @@ public class AuthenticationAttempt {
         this.successful = successful;
         this.userAgent = userAgent;
         this.failureReason = failureReason;
+        this.attemptType = "LOGIN";
     }
 
     // Getters y setters
@@ -116,6 +121,14 @@ public class AuthenticationAttempt {
 
     public void setFailureReason(String failureReason) {
         this.failureReason = failureReason;
+    }
+
+    public String getAttemptType() {
+        return attemptType;
+    }
+
+    public void setAttemptType(String attemptType) {
+        this.attemptType = attemptType;
     }
 
 }

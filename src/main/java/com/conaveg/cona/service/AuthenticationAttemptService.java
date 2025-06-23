@@ -180,6 +180,44 @@ public class AuthenticationAttemptService {
     }
 
     /**
+     * Verifica si un usuario puede intentar renovar token (rate limiting específico)
+     */
+    public boolean canAttemptRefresh(String email, String ipAddress) {
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        
+        // Máximo 10 intentos de refresh por hora por usuario
+        long userRefreshAttempts = attemptRepository.countByEmailAndAttemptTimeAfterAndAttemptType(
+            email, oneHourAgo, "REFRESH"
+        );
+        
+        // Máximo 20 intentos de refresh por hora por IP
+        long ipRefreshAttempts = attemptRepository.countByIpAddressAndAttemptTimeAfterAndAttemptType(
+            ipAddress, oneHourAgo, "REFRESH"  
+        );
+        
+        return userRefreshAttempts < 10 && ipRefreshAttempts < 20;
+    }
+    
+    /**
+     * Registra un intento de renovación de token
+     */
+    public void recordRefreshAttempt(String email, String ipAddress, boolean successful) {
+        AuthenticationAttempt attempt = new AuthenticationAttempt();
+        attempt.setEmail(email);
+        attempt.setIpAddress(ipAddress);
+        attempt.setSuccessful(successful);
+        attempt.setAttemptTime(LocalDateTime.now());
+        attempt.setAttemptType("REFRESH");
+        attempt.setUserAgent("API");
+        
+        if (!successful) {
+            attempt.setFailureReason("Token refresh failed");
+        }
+        
+        attemptRepository.save(attempt);
+    }
+
+    /**
      * Clase para estadísticas de autenticación
      */
     public static class AuthenticationStats {

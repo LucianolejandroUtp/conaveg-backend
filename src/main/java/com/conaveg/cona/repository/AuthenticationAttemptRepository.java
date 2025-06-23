@@ -41,6 +41,18 @@ public interface AuthenticationAttemptRepository extends JpaRepository<Authentic
     long countAttemptsByIp(@Param("ipAddress") String ipAddress, @Param("since") LocalDateTime since);
 
     /**
+     * Cuenta intentos por email, tiempo y tipo específico
+     */
+    @Query("SELECT COUNT(a) FROM AuthenticationAttempt a WHERE a.email = :email AND a.attemptTime > :since AND a.attemptType = :attemptType")
+    long countByEmailAndAttemptTimeAfterAndAttemptType(@Param("email") String email, @Param("since") LocalDateTime since, @Param("attemptType") String attemptType);
+
+    /**
+     * Cuenta intentos por IP, tiempo y tipo específico
+     */
+    @Query("SELECT COUNT(a) FROM AuthenticationAttempt a WHERE a.ipAddress = :ipAddress AND a.attemptTime > :since AND a.attemptType = :attemptType")
+    long countByIpAddressAndAttemptTimeAfterAndAttemptType(@Param("ipAddress") String ipAddress, @Param("since") LocalDateTime since, @Param("attemptType") String attemptType);
+
+    /**
      * Encuentra el último intento exitoso por email
      */
     @Query("SELECT a FROM AuthenticationAttempt a WHERE a.email = :email AND a.successful = true ORDER BY a.attemptTime DESC")

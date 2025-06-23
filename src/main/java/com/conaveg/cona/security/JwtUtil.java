@@ -134,4 +134,144 @@ public class JwtUtil {
     public Long getExpirationTime() {
         return jwtExpiration;
     }
+
+    // ===== MÉTODOS PARA REFRESH TOKEN SYSTEM =====
+
+    @Value("${jwt.refresh-window-hours:2}")
+    private int refreshWindowHours;
+
+    @Value("${jwt.refresh-minimum-minutes:30}")
+    private int refreshMinimumMinutes;
+
+    /**
+     * Verifica si un token puede ser renovado
+     * Un token es renovable si:
+     * - Es válido (no expirado, bien formado)
+     * - Le quedan menos de refreshWindowHours para expirar
+     * - Pero más de refreshMinimumMinutes para evitar renovación excesiva
+     */
+    public boolean canRefreshToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            Date expiration = claims.getExpiration();
+            Date now = new Date();
+            
+            // Calcular tiempo restante en milisegundos
+            long timeToExpiration = expiration.getTime() - now.getTime();
+            
+            // Convertir a minutos
+            long minutesToExpiration = timeToExpiration / (1000 * 60);
+            long hoursToExpiration = minutesToExpiration / 60;
+            
+            // Verificar que esté en la ventana de renovación
+            return hoursToExpiration < refreshWindowHours && minutesToExpiration > refreshMinimumMinutes;
+            
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Genera un nuevo token basado en un token existente válido
+     * Extrae la información del token actual y crea uno nuevo con tiempo renovado
+     */
+    public String refreshToken(String oldToken) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(oldToken)
+                    .getPayload();
+
+            String email = claims.getSubject();
+            Long userId = claims.get("userId", Long.class);
+            String role = claims.get("role", String.class);
+
+            // Generar nuevo token con la misma información pero tiempo renovado
+            return generateToken(email, userId, role);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al renovar token: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene el tiempo restante antes de la expiración en minutos
+     */
+    public long getTimeToExpirationMinutes(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            Date expiration = claims.getExpiration();
+            Date now = new Date();
+            
+            long timeToExpiration = expiration.getTime() - now.getTime();
+            return Math.max(0, timeToExpiration / (1000 * 60)); // Convertir a minutos
+            
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Verifica si el token está en ventana de renovación
+     */
+    public boolean isInRefreshWindow(String token) {
+        return canRefreshToken(token);
+    }
+
+    /**
+     * Obtiene información del token para auditoría (sin datos sensibles)
+     */
+    public TokenInfo getTokenInfo(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return new TokenInfo(
+                claims.getIssuedAt(),
+                claims.getExpiration(),
+                getTimeToExpirationMinutes(token),
+                canRefreshToken(token)
+            );
+            
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Clase para información del token
+     */
+    public static class TokenInfo {
+        private final Date issuedAt;
+        private final Date expiresAt;
+        private final long minutesToExpiration;
+        private final boolean canRefresh;
+
+        public TokenInfo(Date issuedAt, Date expiresAt, long minutesToExpiration, boolean canRefresh) {
+            this.issuedAt = issuedAt;
+            this.expiresAt = expiresAt;
+            this.minutesToExpiration = minutesToExpiration;
+            this.canRefresh = canRefresh;
+        }
+
+        // Getters
+        public Date getIssuedAt() { return issuedAt; }
+        public Date getExpiresAt() { return expiresAt; }
+        public long getMinutesToExpiration() { return minutesToExpiration; }
+        public boolean canRefresh() { return canRefresh; }
+    }
 }
