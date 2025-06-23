@@ -26,6 +26,25 @@ public class JwtUtil {
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
+      /**
+     * Normaliza los nombres de roles de la base de datos a los códigos usados en la aplicación
+     */
+    private String normalizeRole(String role) {
+        if (role == null || role.isEmpty()) {
+            return "USER";
+        }
+        
+        switch (role.toUpperCase()) {
+            case "ADMINISTRADOR":
+                return "ADMIN";
+            case "GERENTE":
+                return "GERENTE";
+            case "EMPLEADO":
+                return "EMPLEADO";
+            default:
+                return "USER";
+        }
+    }
     
     /**
      * Genera un token JWT para un usuario
@@ -34,10 +53,13 @@ public class JwtUtil {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
         
+        // Normalizar el rol antes de incluirlo en el token
+        String normalizedRole = normalizeRole(role);
+        
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
-                .claim("role", role)
+                .claim("role", normalizedRole)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -56,8 +78,7 @@ public class JwtUtil {
         
         return claims.getSubject();
     }
-    
-    /**
+      /**
      * Extrae el userId del token
      */
     public Long getUserIdFromToken(String token) {
@@ -68,6 +89,19 @@ public class JwtUtil {
                 .getPayload();
         
         return claims.get("userId", Long.class);
+    }
+    
+    /**
+     * Extrae el rol del usuario desde el token JWT
+     */
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        
+        return claims.get("role", String.class);
     }
     
     /**

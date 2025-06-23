@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,28 +32,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // Extraer token JWT del header Authorization
             String jwt = getJwtFromRequest(request);
-            
-            // Si hay token y es válido, establecer autenticación
+              // Si hay token y es válido, establecer autenticación
             if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
                 String email = jwtUtil.getEmailFromToken(jwt);
                 Long userId = jwtUtil.getUserIdFromToken(jwt);
+                String role = jwtUtil.getRoleFromToken(jwt);
                 
-                // Crear objeto de autenticación
-                // Por ahora usamos un rol simple, en futuras versiones se extraerá del token
+                // Crear objeto de autenticación con rol real del token
+                // Si no hay rol en el token, usar rol por defecto
+                String userRole = (role != null && !role.isEmpty()) ? role : "USER";
                 List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                    new SimpleGrantedAuthority("ROLE_USER")
+                    new SimpleGrantedAuthority("ROLE_" + userRole)
                 );
-                
-                UsernamePasswordAuthenticationToken authentication = 
+                  UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(email, null, authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                
+                // Crear detalles personalizados que incluyan el userId
+                JwtAuthenticationDetails details = new JwtAuthenticationDetails(request, userId, userRole);
+                authentication.setDetails(details);
                 
                 // Establecer autenticación en el contexto de seguridad
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 
-                // Opcional: Agregar información adicional del usuario al request
+                // Agregar información adicional del usuario al request
                 request.setAttribute("userId", userId);
                 request.setAttribute("userEmail", email);
+                request.setAttribute("userRole", userRole);
             }
         } catch (Exception ex) {
             // En caso de error, limpiar el contexto de seguridad

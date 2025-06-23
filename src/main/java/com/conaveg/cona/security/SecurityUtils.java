@@ -23,17 +23,39 @@ public class SecurityUtils {
         }
         
         return null;
+    }    /**
+     * Obtiene el ID del usuario autenticado desde los detalles de la autenticación JWT
+     */
+    public static Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null && authentication.getDetails() instanceof JwtAuthenticationDetails) {
+            JwtAuthenticationDetails details = (JwtAuthenticationDetails) authentication.getDetails();
+            return details.getUserId();
+        }
+        
+        return null;
+    }
+      /**
+     * Obtiene el rol del usuario desde el contexto de autenticación JWT
+     */
+    public static String getCurrentUserRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null && authentication.getDetails() instanceof JwtAuthenticationDetails) {
+            JwtAuthenticationDetails details = (JwtAuthenticationDetails) authentication.getDetails();
+            return details.getRole();
+        }
+        
+        return null;
     }
     
     /**
-     * Obtiene el ID del usuario autenticado desde los atributos de la request
-     * (establecido por JwtAuthenticationFilter)
+     * Verifica si el usuario actual es el propietario del recurso
      */
-    public static Long getCurrentUserId() {
-        // Esta información se obtendría desde la request actual
-        // En una implementación más avanzada, se podría extraer del token
-        // Por ahora retornamos null, se implementará cuando sea necesario
-        return null;
+    public static boolean isCurrentUser(Long userId) {
+        Long currentUserId = getCurrentUserId();
+        return currentUserId != null && currentUserId.equals(userId);
     }
     
     /**
