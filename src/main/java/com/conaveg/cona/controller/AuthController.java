@@ -5,7 +5,12 @@ import com.conaveg.cona.dto.LoginResponseDTO;
 import com.conaveg.cona.dto.RefreshTokenRequestDTO;
 import com.conaveg.cona.dto.RefreshTokenResponseDTO;
 import com.conaveg.cona.dto.UserDTO;
+// Agregando imports para password recovery
+import com.conaveg.cona.dto.ForgotPasswordRequestDTO;
+import com.conaveg.cona.dto.ResetPasswordRequestDTO;
+import com.conaveg.cona.dto.PasswordResetResponseDTO;
 import com.conaveg.cona.service.AuthenticationService;
+import com.conaveg.cona.service.PasswordRecoveryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +36,9 @@ public class AuthController {
     
     @Autowired
     private AuthenticationService authenticationService;
+    
+    @Autowired
+    private PasswordRecoveryService passwordRecoveryService;
     
     /**
      * Endpoint de login
@@ -178,6 +186,122 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Error de autorización: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Endpoint para solicitar recuperación de contraseña
+     */
+    @Operation(summary = "Solicitar recuperación de contraseña", 
+               description = "Envía un token de recuperación al email del usuario si existe en el sistema. " +
+                           "Por razones de seguridad, siempre devuelve una respuesta exitosa.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Solicitud procesada (se envía email si el usuario existe)"),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "429", description = "Demasiadas solicitudes de recuperación")
+    })
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request,
+                                          HttpServletRequest httpRequest) {
+        try {
+            String clientIp = getClientIpAddress(httpRequest);
+            String userAgent = httpRequest.getHeader("User-Agent");
+            
+            // Procesar solicitud de recuperación
+            passwordRecoveryService.initiatePasswordReset(
+                request.getEmail(), clientIp, userAgent
+            );
+            
+            // Por seguridad, siempre devolvemos el mismo mensaje
+            PasswordResetResponseDTO response = PasswordResetResponseDTO.success(
+                "Si el email existe en nuestro sistema, recibirás instrucciones de recuperación en breve."
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Demasiadas solicitudes")) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(PasswordResetResponseDTO.error(e.getMessage()));
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(PasswordResetResponseDTO.error("Error al procesar la solicitud: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Endpoint para resetear contraseña con token
+     */
+    @Operation(summary = "Resetear contraseña", 
+               description = "Cambia la contraseña del usuario usando un token de recuperación válido.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Contraseña cambiada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Token inválido, expirado o datos inválidos"),
+        @ApiResponse(responseCode = "422", description = "Nueva contraseña no válida o no coincide")
+    })
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request,
+                                         HttpServletRequest httpRequest) {
+        try {
+            // Validar que las contraseñas coincidan
+            if (!request.passwordsMatch()) {
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(PasswordResetResponseDTO.error("Las contraseñas no coinciden"));
+            }
+            
+            String clientIp = getClientIpAddress(httpRequest);
+            String userAgent = httpRequest.getHeader("User-Agent");
+            
+            // Procesar reset de contraseña
+            boolean success = passwordRecoveryService.resetPassword(
+                request.getToken(), 
+                request.getNewPassword(), 
+                clientIp, 
+                userAgent
+            );
+            
+            if (success) {
+                PasswordResetResponseDTO response = PasswordResetResponseDTO.success(
+                    "Contraseña cambiada exitosamente. Ya puedes iniciar sesión con tu nueva contraseña."
+                );
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(PasswordResetResponseDTO.error("Token inválido o expirado"));
+            }
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(PasswordResetResponseDTO.error("Error al cambiar contraseña: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Endpoint para validar un token de recuperación
+     */
+    @Operation(summary = "Validar token de recuperación", 
+               description = "Verifica si un token de recuperación de contraseña es válido y no ha expirado.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Token válido"),
+        @ApiResponse(responseCode = "400", description = "Token inválido o expirado")
+    })
+    @GetMapping("/validate-reset-token")
+    public ResponseEntity<?> validateResetToken(@Parameter(description = "Token de recuperación", required = true)
+                                              @RequestParam String token) {
+        try {
+            boolean isValid = passwordRecoveryService.validateResetToken(token);
+            
+            if (isValid) {
+                PasswordResetResponseDTO response = PasswordResetResponseDTO.success(
+                    "Token válido", "Puedes proceder a cambiar tu contraseña"
+                );
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(PasswordResetResponseDTO.error("Token inválido o expirado"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(PasswordResetResponseDTO.error("Error al validar token: " + e.getMessage()));
         }
     }
     
