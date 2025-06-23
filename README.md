@@ -31,6 +31,8 @@ Toda la documentación técnica del proyecto está organizada en la carpeta [`do
 ### 🔒 Documentación de Seguridad
 - **[🔐 Mejores Prácticas de Seguridad](docs/Security_Best_Practices.md)** - Guía de seguridad
 - **[🔑 Guía de Uso de BCrypt](docs/BCrypt_Usage_Guide.md)** - Implementación de cifrado de contraseñas
+- **[🛡️ Matriz de Permisos](docs/MATRIZ_PERMISOS_ACTUALIZADA.md)** - Sistema completo de autorización por roles
+- **[🔧 Corrección GERENTE](docs/CORRECCION_GERENTE_USUARIO.md)** - Fix permisos para gestión de perfil propio
 - **[⚡ Guía de Tests de Rendimiento](docs/Performance_Testing_Guide.md)** - Tests de carga y estrés
 
 ### 📊 Diagramas y Esquemas
@@ -185,9 +187,38 @@ public class User {
 > **Nota sobre contraseñas**: La contraseña debe tener al menos 8 caracteres, incluyendo una letra minúscula, una mayúscula y un número. Se cifra automáticamente con BCrypt antes de almacenarla.
 
 ## Seguridad
-El proyecto utiliza Spring Security, pero actualmente está deshabilitado para facilitar el desarrollo. Se recomienda habilitarlo antes de producción.
 
-### Cifrado de Contraseñas
+El sistema implementa un **sistema completo de autenticación y autorización** usando Spring Security con JWT y control de acceso por roles.
+
+### 🔐 Autenticación JWT
+- **Tokens JWT** para autenticación stateless
+- **Roles extraídos del token** para autorización granular
+- **Filtro personalizado** (`JwtAuthenticationFilter`) para validación automática
+- **Detalles de autenticación** personalizados con información del usuario
+
+### 🛡️ Autorización por Roles
+El sistema implementa **4 roles principales** con permisos específicos:
+
+- **ADMIN**: Acceso total al sistema, gestión de usuarios y roles
+- **GERENTE**: Gestión operativa de proyectos e inventario + su propio perfil
+- **EMPLEADO**: Acceso a información de empleados + su propio perfil
+- **USER**: Solo lectura en proyectos/inventario + su propio perfil
+
+### 🔑 Guards de Seguridad
+Los endpoints están protegidos usando anotaciones `@PreAuthorize`:
+
+```java
+// Solo administradores
+@PreAuthorize("hasRole('ADMIN')")
+
+// Roles específicos
+@PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE')")
+
+// Ownership - usuario puede ver/editar su propio perfil
+@PreAuthorize("hasRole('ADMIN') or (hasAnyRole('GERENTE','EMPLEADO','USER') and @authorizationService.isOwnerOrAdmin(#id))")
+```
+
+### 🔒 Cifrado de Contraseñas
 El sistema implementa cifrado seguro de contraseñas usando **BCrypt**:
 
 - **Almacenamiento**: Las contraseñas se almacenan cifradas en la base de datos usando BCrypt con salt automático.
@@ -199,6 +230,10 @@ El sistema implementa cifrado seguro de contraseñas usando **BCrypt**:
 - **Salt automático**: Cada contraseña tiene su propio salt único.
 - **Resistente a ataques**: Algoritmo lento que dificulta ataques de fuerza bruta.
 - **Estándar de la industria**: Ampliamente adoptado y probado.
+
+### 📋 Matriz de Permisos Completa
+Para detalles completos sobre permisos por rol y endpoint, consulta:
+- **[🛡️ Matriz de Permisos](docs/MATRIZ_PERMISOS_ACTUALIZADA.md)** - Documentación completa del sistema de autorización
 
 #### Ejemplo de uso:
 ```java

@@ -10,7 +10,25 @@ Esta carpeta contiene toda la documentación técnica y guías del Sistema de Ge
 - Avances Logrados
 - Puntos Pendientes y Áreas de Mejora
 
-### 📚 Guías de Desarrollo
+### � Documentación de Seguridad y Autenticación
+
+#### [MATRIZ_PERMISOS_ACTUALIZADA.md](./MATRIZ_PERMISOS_ACTUALIZADA.md) ✅ **NUEVO**
+**Matriz completa de permisos por rol del sistema**
+- Matriz detallada de permisos para todos los endpoints
+- Roles implementados: ADMIN, GERENTE, EMPLEADO, USER
+- Guards de autorización con `@PreAuthorize`
+- Lógica de ownership para perfil propio
+- Implementación técnica y ejemplos de uso
+- Pruebas recomendadas por rol
+
+#### [CORRECCION_GERENTE_USUARIO.md](./CORRECCION_GERENTE_USUARIO.md) ✅ **NUEVO**
+**Corrección de permisos para rol GERENTE**
+- Problema identificado y solución implementada
+- Actualización del método `isOwnerOrAdmin` en AuthorizationService
+- Cambios en anotaciones `@PreAuthorize` de UserController
+- Sincronización de documentación con implementación
+
+### �📚 Guías de Desarrollo
 
 #### [BCrypt_Usage_Guide.md](./BCrypt_Usage_Guide.md)
 **Guía completa de uso de BCrypt para desarrolladores**
