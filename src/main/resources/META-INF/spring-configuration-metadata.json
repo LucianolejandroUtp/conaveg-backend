@@ -1,0 +1,129 @@
+{
+  "properties": [
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "Secret key for JWT token generation"
+    },
+    {
+      "name": "jwt.expiration",
+      "type": "java.lang.Long",
+      "description": "JWT token expiration time in milliseconds"
+    },
+    {
+      "name": "jwt.refresh-window-hours",
+      "type": "java.lang.Integer",
+      "description": "Window hours for JWT refresh token"
+    },
+    {
+      "name": "jwt.refresh-minimum-minutes",
+      "type": "java.lang.Integer",
+      "description": "Minimum minutes for JWT refresh"
+    },
+    {
+      "name": "jwt.max-refreshes-per-hour",
+      "type": "java.lang.Integer",
+      "description": "Maximum refresh attempts per hour"
+    },
+    {
+      "name": "jwt.invalidate-old-on-refresh",
+      "type": "java.lang.Boolean",
+      "description": "Whether to invalidate old tokens on refresh"
+    },
+    {
+      "name": "app.email.from",
+      "type": "java.lang.String",
+      "description": "Email address for sending emails"
+    },
+    {
+      "name": "app.base-url",
+      "type": "java.lang.String",
+      "description": "Base URL of the application"
+    },
+    {
+      "name": "app.security.max-login-attempts",
+      "type": "java.lang.Integer",
+      "description": "Maximum login attempts before account lock"
+    },
+    {
+      "name": "app.security.lockout-duration-minutes",
+      "type": "java.lang.Integer",
+      "description": "Account lockout duration in minutes"
+    },
+    {
+      "name": "app.security.password-reset-token-validity-hours",
+      "type": "java.lang.Integer",
+      "description": "Password reset token validity in hours"
+    },
+    {
+      "name": "app.security.max-password-reset-requests-per-hour",
+      "type": "java.lang.Integer",
+      "description": "Maximum password reset requests per hour"
+    },
+    {
+      "name": "app.security.max-attempts-per-ip-per-hour",
+      "type": "java.lang.Integer",
+      "description": "Maximum attempts per IP per hour"
+    },
+    {
+      "name": "app.security.rate-limiting.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable rate limiting"
+    },
+    {
+      "name": "app.security.rate-limiting.max-requests-per-hour-per-ip",
+      "type": "java.lang.Integer",
+      "description": "Maximum requests per hour per IP"
+    },
+    {
+      "name": "app.security.rate-limiting.max-requests-per-hour-per-email",
+      "type": "java.lang.Integer",
+      "description": "Maximum requests per hour per email"
+    },
+    {
+      "name": "app.security.rate-limiting.blocked-duration-minutes",
+      "type": "java.lang.Integer",
+      "description": "Blocked duration in minutes for rate limiting"
+    },
+    {
+      "name": "app.maintenance.cleanup.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable maintenance cleanup tasks"
+    },
+    {
+      "name": "app.maintenance.cleanup.password-tokens.keep-days",
+      "type": "java.lang.Integer",
+      "description": "Days to keep password reset tokens"
+    },
+    {
+      "name": "app.maintenance.cleanup.auth-attempts.keep-days",
+      "type": "java.lang.Integer",
+      "description": "Days to keep authentication attempts"
+    },
+    {
+      "name": "app.maintenance.cleanup.audit-logs.keep-days",
+      "type": "java.lang.Integer",
+      "description": "Days to keep audit logs"
+    },
+    {
+      "name": "app.security.audit.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable security audit logging"
+    },
+    {
+      "name": "app.security.audit.log-all-endpoints",
+      "type": "java.lang.Boolean",
+      "description": "Log all endpoints or only sensitive ones"
+    },
+    {
+      "name": "app.security.audit.log-authentication-endpoints",
+      "type": "java.lang.Boolean",
+      "description": "Enable logging for authentication endpoints"
+    },
+    {
+      "name": "app.security.audit.detailed-logging",
+      "type": "java.lang.Boolean",
+      "description": "Enable detailed audit logging"
+    }
+  ]
+}
