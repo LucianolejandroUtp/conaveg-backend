@@ -56,7 +56,8 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new RuntimeException("Credenciales inválidas");
         }
-          // Generar token JWT
+        
+        // Generar token JWT
         String roleName = user.getRole() != null ? user.getRole().getNombre() : "USER";
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), roleName);
         
@@ -65,6 +66,54 @@ public class AuthenticationService {
         
         // Crear respuesta
         return new LoginResponseDTO(token, userDTO, jwtUtil.getExpirationTime());
+    }
+
+    /**
+     * Autentica un usuario con protección de rate limiting integrada
+     */
+    public LoginResponseDTO authenticateUserWithProtection(LoginRequestDTO loginRequest, 
+                                                         String clientIp, String userAgent) {
+        try {
+            // El rate limiting ya se maneja en el RateLimitingFilter
+            // Aquí solo procesamos la autenticación normal
+            
+            LoginResponseDTO response = authenticateUser(loginRequest);
+            
+            // Registrar intento exitoso para estadísticas
+            authenticationAttemptService.recordAuthenticationAttempt(
+                loginRequest.getEmail(), clientIp, userAgent, true, null
+            );
+            
+            // Log de auditoría
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.LOGIN_SUCCESS,
+                response.getUser().getId(),
+                loginRequest.getEmail(),
+                clientIp, userAgent,
+                "Successful login for user: " + loginRequest.getEmail(),
+                SecurityAuditService.Severity.MEDIUM
+            );
+            
+            return response;
+            
+        } catch (RuntimeException e) {
+            // Registrar intento fallido
+            authenticationAttemptService.recordAuthenticationAttempt(
+                loginRequest.getEmail(), clientIp, userAgent, false, e.getMessage()
+            );
+            
+            // Log de auditoría de fallo
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.LOGIN_FAILED,
+                null,
+                loginRequest.getEmail(),
+                clientIp, userAgent,
+                "Failed login attempt: " + e.getMessage(),
+                SecurityAuditService.Severity.MEDIUM
+            );
+            
+            throw e; // Re-lanzar la excepción
+        }
     }
     
     /**
@@ -113,15 +162,23 @@ public class AuthenticationService {
         
         // 1. Validar token
         if (!jwtUtil.validateToken(token)) {
-            securityAuditService.logSecurityEvent("TOKEN_REFRESH_INVALID", 
-                "Intento de renovación con token inválido", clientIp, null, false);
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.TOKEN_REFRESH_INVALID,
+                null, "", clientIp, "",
+                "Intento de renovación con token inválido",
+                SecurityAuditService.Severity.HIGH
+            );
             throw new RuntimeException("Token inválido");
         }
         
         // 2. Verificar si el token puede ser renovado
         if (!jwtUtil.canRefreshToken(token)) {
-            securityAuditService.logSecurityEvent("TOKEN_REFRESH_OUT_OF_WINDOW", 
-                "Token fuera de ventana de renovación", clientIp, null, false);
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.TOKEN_REFRESH_OUT_OF_WINDOW,
+                null, "", clientIp, "",
+                "Token fuera de ventana de renovación",
+                SecurityAuditService.Severity.MEDIUM
+            );
             throw new IllegalArgumentException("Token no está en ventana de renovación");
         }
         
@@ -130,8 +187,12 @@ public class AuthenticationService {
         Long userId = jwtUtil.getUserIdFromToken(token);
         
         if (!authenticationAttemptService.canAttemptRefresh(email, clientIp)) {
-            securityAuditService.logSecurityEvent("TOKEN_REFRESH_RATE_LIMITED", 
-                "Rate limit excedido para renovación", clientIp, email, false);
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.TOKEN_REFRESH_RATE_LIMITED,
+                null, email, clientIp, "",
+                "Rate limit excedido para renovación",
+                SecurityAuditService.Severity.HIGH
+            );
             throw new RuntimeException("Demasiados intentos de renovación");
         }
         
@@ -161,16 +222,24 @@ public class AuthenticationService {
             
             // 7. Registrar intento exitoso y auditoría
             authenticationAttemptService.recordRefreshAttempt(email, clientIp, true);
-            securityAuditService.logSecurityEvent("TOKEN_REFRESH_SUCCESS", 
-                "Token renovado exitosamente", clientIp, email, true);
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.TOKEN_REFRESH_SUCCESS,
+                userId, email, clientIp, "",
+                "Token renovado exitosamente",
+                SecurityAuditService.Severity.MEDIUM
+            );
             
             return response;
             
         } catch (Exception e) {
             // 8. Registrar intento fallido
             authenticationAttemptService.recordRefreshAttempt(email, clientIp, false);
-            securityAuditService.logSecurityEvent("TOKEN_REFRESH_ERROR", 
-                "Error durante renovación: " + e.getMessage(), clientIp, email, false);
+            securityAuditService.logSecurityEvent(
+                SecurityAuditService.EventType.TOKEN_REFRESH_ERROR,
+                userId, email, clientIp, "",
+                "Error durante renovación: " + e.getMessage(),
+                SecurityAuditService.Severity.HIGH
+            );
             throw e;
         }
     }

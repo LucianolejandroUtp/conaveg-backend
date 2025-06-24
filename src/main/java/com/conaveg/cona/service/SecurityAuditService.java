@@ -44,6 +44,7 @@ public class SecurityAuditService {
         UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS"),
         PERMISSION_DENIED("PERMISSION_DENIED"),
         DATA_ACCESS("DATA_ACCESS"),
+        RATE_LIMIT_EXCEEDED("RATE_LIMIT_EXCEEDED"),
         SYSTEM_ERROR("SYSTEM_ERROR");
 
         private final String value;
