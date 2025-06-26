@@ -3,23 +3,29 @@ package com.conaveg.cona.config;
 import com.conaveg.cona.security.JwtAuthenticationEntryPoint;
 import com.conaveg.cona.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Configuración de seguridad para el proyecto CONAVEG
- * Incluye configuración de cifrado de contraseñas con BCrypt y autorización por roles
+ * Incluye configuración de filtros JWT y autorización por roles
+ * 
+ * Esta configuración se desactiva automáticamente cuando el perfil 'dev' está activo
+ * y app.dev.skip-authentication=true
+ * 
+ * Nota: El bean passwordEncoder se encuentra en BaseConfig para estar siempre disponible
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true) // Habilitar anotaciones @PreAuthorize
+@ConditionalOnProperty(name = "app.dev.skip-authentication", havingValue = "false", matchIfMissing = true)
 public class SecurityConfig {
     
     @Autowired
@@ -29,13 +35,6 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     /**
-     * Bean para cifrado de contraseñas usando BCrypt
-     * BCrypt incluye salt automático y es resistente a ataques de fuerza bruta
-     */
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }    /**
      * Configuración de filtros de seguridad con middleware JWT
      * Implementa autenticación automática y protección de endpoints
      */

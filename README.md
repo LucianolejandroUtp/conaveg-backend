@@ -8,6 +8,7 @@ Backend API REST para la administración de inventarios, asistencia de personal 
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
 - [Configuración de Base de Datos](#configuración-de-base-de-datos)
+- [🚀 Configuración de Desarrollo](#-configuración-de-desarrollo)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Consideraciones sobre los campos generados automáticamente por la base de datos](#consideraciones-sobre-los-campos-generados-automáticamente-por-la-base-de-datos)
 - [Recursos y Endpoints Principales](#recursos-y-endpoints-principales)
@@ -34,6 +35,9 @@ Toda la documentación técnica del proyecto está organizada en la carpeta [`do
 - **[🛡️ Matriz de Permisos](docs/MATRIZ_PERMISOS_ACTUALIZADA.md)** - Sistema completo de autorización por roles
 - **[🔧 Corrección GERENTE](docs/CORRECCION_GERENTE_USUARIO.md)** - Fix permisos para gestión de perfil propio
 - **[⚡ Guía de Tests de Rendimiento](docs/Performance_Testing_Guide.md)** - Tests de carga y estrés
+
+### 🚀 Documentación de Desarrollo
+- **[🔓 Modo Desarrollo sin Autenticación](docs/DEV_SKIP_AUTH.md)** - Configuración para saltarse autenticación en desarrollo
 
 ### 📊 Diagramas y Esquemas
 - **[🏗️ Diagrama de Clases](docs/ClassDiagram.png)** - Estructura de clases del sistema
@@ -71,6 +75,41 @@ spring.datasource.username=TU_USUARIO
 spring.datasource.password=TU_PASSWORD
 ```
 Asegúrate de tener la base de datos creada antes de iniciar la aplicación.
+
+## 🚀 Configuración de Desarrollo
+Para configurar el entorno de desarrollo, sigue estos pasos:
+
+1. **Clona el repositorio** en tu máquina local.
+2. **Importa el proyecto en tu IDE favorito** (Eclipse, IntelliJ, etc.).
+3. **Asegúrate de tener las dependencias de Maven actualizadas**. Puedes hacerlo ejecutando `mvn clean install` en la terminal.
+4. **Configura un servidor MariaDB** y crea una base de datos llamada `conaveg_db` (o el nombre que prefieras).
+5. **Actualiza las credenciales de la base de datos** en el archivo `src/main/resources/application.properties`.
+6. **Ejecuta la aplicación**. Si todo está configurado correctamente, la aplicación debería iniciarse en `http://localhost:8080/conaveg`.
+
+### 🔓 Modo Desarrollo sin Autenticación (Para Frontend)
+
+**Para facilitar el desarrollo del frontend**, puedes activar un modo especial que desactiva completamente la autenticación:
+
+```bash
+# Activar perfil de desarrollo
+export SPRING_PROFILES_ACTIVE=dev
+mvn spring-boot:run
+```
+
+En este modo:
+- ✅ **Todos los endpoints son accesibles sin token JWT**
+- ✅ **Endpoints simulados disponibles en `/api/dev/`**
+- ✅ **Datos de usuario ficticio para pruebas**
+- ⚠️ **SOLO para desarrollo - NUNCA en producción**
+
+Ver documentación completa: **[📖 Guía Completa del Modo Desarrollo](docs/DEV_SKIP_AUTH.md)**
+
+### Herramientas Recomendadas
+- **IDE**: IntelliJ IDEA, Eclipse o cualquier otro de tu preferencia.
+- **Base de Datos**: MariaDB con un cliente como DBeaver o HeidiSQL para gestionar la base de datos.
+- **Pruebas de API**: Postman o Insomnia para probar los endpoints de la API.
+
+---
 
 ## Estructura del Proyecto
 - `config/`: Configuraciones de la aplicación (Jackson, etc.).
