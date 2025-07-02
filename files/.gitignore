@@ -1,0 +1,6 @@
+# Ignorar todos los archivos en esta carpeta excepto este .gitignore
+*
+!.gitignore
+
+# Mantener la estructura de carpetas pero no los archivos
+!*/
