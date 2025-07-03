@@ -1,5 +1,6 @@
 package com.conaveg.cona.service;
 import com.conaveg.cona.dto.UserCreateDTO;
+import com.conaveg.cona.dto.UserUpdateDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,6 +63,40 @@ public class UserService {
                 rol.setId(userCreateDTO.getRoleId());
                 user.setRole(rol);
             }
+            User updated = userRepository.save(user);
+            return toDTO(updated);
+        }
+        return null;
+    }
+
+    /**
+     * Actualiza un usuario usando UserUpdateDTO (contraseña opcional)
+     * 
+     * @param id ID del usuario a actualizar
+     * @param userUpdateDTO DTO con los datos a actualizar
+     * @return UserDTO actualizado o null si no existe
+     */
+    public UserDTO updateUserWithOptionalPassword(Long id, UserUpdateDTO userUpdateDTO) {
+        if (userRepository.existsById(id)) {
+            User user = userRepository.findById(id).orElse(null);
+            if (user == null) return null;
+            
+            user.setUserName(userUpdateDTO.getUserName());
+            user.setEmail(userUpdateDTO.getEmail());
+            
+            // Solo cifrar y actualizar contraseña si se proporciona una nueva
+            if (userUpdateDTO.getPassword() != null && !userUpdateDTO.getPassword().trim().isEmpty()) {
+                String encryptedPassword = passwordEncoder.encode(userUpdateDTO.getPassword());
+                user.setPassword(encryptedPassword);
+            }
+            // Si no se proporciona contraseña, se mantiene la existente
+            
+            if (userUpdateDTO.getRoleId() != null) {
+                Rol rol = new Rol();
+                rol.setId(userUpdateDTO.getRoleId());
+                user.setRole(rol);
+            }
+            
             User updated = userRepository.save(user);
             return toDTO(updated);
         }

@@ -2,6 +2,7 @@ package com.conaveg.cona.controller;
 
 import com.conaveg.cona.dto.UserDTO;
 import com.conaveg.cona.dto.UserCreateDTO;
+import com.conaveg.cona.dto.UserUpdateDTO;
 import com.conaveg.cona.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,7 @@ public class UserController {
             @Valid @RequestBody UserCreateDTO userCreateDTO) {
         UserDTO created = userService.saveUser(userCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente. Los administradores pueden actualizar cualquier usuario, gerentes/empleados/usuarios solo pueden actualizar su propia información.")
+    }    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario existente. La contraseña es opcional - si no se proporciona, se mantiene la actual. Los administradores pueden actualizar cualquier usuario, gerentes/empleados/usuarios solo pueden actualizar su propia información.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuario actualizado exitosamente"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado - Solo puedes actualizar tu propia información"),
@@ -74,9 +75,9 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(
             @Parameter(description = "ID del usuario a actualizar", example = "1") @PathVariable Long id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del usuario")
-            @Valid @RequestBody UserCreateDTO userCreateDTO) {
-        UserDTO updated = userService.updateUser(id, userCreateDTO);
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del usuario. La contraseña es opcional.")
+            @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+        UserDTO updated = userService.updateUserWithOptionalPassword(id, userUpdateDTO);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         } else {
