@@ -9,6 +9,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 /**
  * Configuración de seguridad para el entorno de desarrollo
@@ -34,6 +38,7 @@ public class DevSecurityConfig {
     @Primary
     public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
         return http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilitar CORS
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll() // PERMITIR TODO SIN AUTENTICACIÓN
@@ -42,5 +47,38 @@ public class DevSecurityConfig {
                 .frameOptions().sameOrigin() // Permitir frames para H2 console si es necesario
             )
             .build();
+    }
+
+    /**
+     * Configuración de CORS para desarrollo
+     * Permite conexiones desde el frontend en puerto 3000
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Orígenes permitidos (frontend)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+        ));
+        
+        // Métodos HTTP permitidos
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+        ));
+        
+        // Headers permitidos
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Permitir credenciales
+        configuration.setAllowCredentials(true);
+        
+        // Tiempo de cache para preflight requests
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
