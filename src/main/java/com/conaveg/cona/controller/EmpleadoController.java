@@ -24,14 +24,35 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @SecurityRequirement(name = "bearerAuth")
 public class EmpleadoController {
     @Autowired
-    private EmpleadoService empleadoService;    @Operation(summary = "Listar empleados", description = "Obtiene todos los empleados registrados en el sistema.")
+    private EmpleadoService empleadoService;
+
+    @Operation(summary = "Buscar empleado por número de documento", description = "Obtiene un empleado a partir de su número de documento (DNI, CI, etc).")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Empleado encontrado"),
+        @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLEADO') or hasRole('GERENTE')")
+    @GetMapping("/documento/{nroDocumento}")
+    public ResponseEntity<EmpleadoDTO> getEmpleadoByNroDocumento(
+            @Parameter(description = "Número de documento del empleado", example = "12345678") @PathVariable String nroDocumento) {
+        EmpleadoDTO empleado = empleadoService.getEmpleadoByNroDocumento(nroDocumento);
+        if (empleado != null) {
+            return ResponseEntity.ok(empleado);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Listar empleados", description = "Obtiene todos los empleados registrados en el sistema.")
     @ApiResponse(responseCode = "200", description = "Lista de empleados obtenida correctamente")
     @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLEADO')")
     @GetMapping
     public ResponseEntity<List<EmpleadoDTO>> getAllEmpleados() {
         List<EmpleadoDTO> empleados = empleadoService.getAllEmpleados();
         return ResponseEntity.ok(empleados);
-    }    @Operation(summary = "Obtener empleado por ID", description = "Obtiene un empleado específico a partir de su ID.")
+    }
+
+    @Operation(summary = "Obtener empleado por ID", description = "Obtiene un empleado específico a partir de su ID.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Empleado encontrado"),
         @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
@@ -46,7 +67,9 @@ public class EmpleadoController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }    @Operation(summary = "Crear empleado", description = "Registra un nuevo empleado en el sistema.")
+    }
+
+    @Operation(summary = "Crear empleado", description = "Registra un nuevo empleado en el sistema.")
     @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente")
     @PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE')")
     @PostMapping
@@ -55,7 +78,9 @@ public class EmpleadoController {
             @RequestBody EmpleadoDTO empleadoDTO) {
         EmpleadoDTO created = empleadoService.saveEmpleado(empleadoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }    @Operation(summary = "Actualizar empleado", description = "Actualiza los datos de un empleado existente.")
+    }
+
+    @Operation(summary = "Actualizar empleado", description = "Actualiza los datos de un empleado existente.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Empleado actualizado correctamente"),
         @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
@@ -72,7 +97,9 @@ public class EmpleadoController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }    @Operation(summary = "Eliminar empleado", description = "Elimina un empleado existente por su ID.")
+    }
+
+    @Operation(summary = "Eliminar empleado", description = "Elimina un empleado existente por su ID.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Empleado eliminado correctamente"),
         @ApiResponse(responseCode = "404", description = "Empleado no encontrado")

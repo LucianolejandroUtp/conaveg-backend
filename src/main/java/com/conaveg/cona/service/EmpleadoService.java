@@ -12,6 +12,11 @@ import com.conaveg.cona.repository.EmpleadoRepository;
 
 @Service
 public class EmpleadoService {
+    public EmpleadoDTO getEmpleadoByNroDocumento(String nroDocumento) {
+        return empleadoRepository.findByNroDocumento(nroDocumento)
+                .map(this::toDTO)
+                .orElse(null);
+    }
     @Autowired
     private EmpleadoRepository empleadoRepository;
 
