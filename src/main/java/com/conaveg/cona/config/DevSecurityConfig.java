@@ -46,7 +46,7 @@ public class DevSecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilitar CORS
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // PERMITIR TODO SIN AUTENTICACIÓN EN DESARROLLO
+                .anyRequest().permitAll() // PERMITIR
             )
             .headers(headers -> headers
                 .frameOptions().sameOrigin() // Permitir frames para H2 console si es necesario
