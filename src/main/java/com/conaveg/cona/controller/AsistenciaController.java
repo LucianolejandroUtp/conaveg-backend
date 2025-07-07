@@ -1,5 +1,7 @@
 package com.conaveg.cona.controller;
 
+import com.conaveg.cona.dto.AsistenciaRegistroRapidoDTO;
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.conaveg.cona.dto.AsistenciaDTO;
 import com.conaveg.cona.service.AsistenciaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import java.util.List;
 // OpenAPI/Swagger imports
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +22,26 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping("/api/asistencias")
 @Tag(name = "Asistencias", description = "Registro y gestión de la asistencia del personal.")
+@SecurityRequirement(name = "bearerAuth")
 public class AsistenciaController {
+
+    @Operation(summary = "Registro rápido de asistencia", description = "Registra una asistencia solo con el número de documento y el método de registro. El backend resuelve el empleado y guarda la entrada.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Asistencia registrada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE')")
+    @PostMapping("/registro-rapido")
+    public ResponseEntity<AsistenciaDTO> registrarAsistenciaRapida(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos mínimos para registrar asistencia")
+            @RequestBody AsistenciaRegistroRapidoDTO request) {
+        AsistenciaDTO created = asistenciaService.registrarAsistenciaRapida(request);
+        if (created != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
     @Autowired
     private AsistenciaService asistenciaService;
 

@@ -1,4 +1,8 @@
+
 package com.conaveg.cona.service;
+
+import com.conaveg.cona.dto.AsistenciaRegistroRapidoDTO;
+import java.time.Instant;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +18,24 @@ import com.conaveg.cona.repository.EmpleadoRepository;
 
 @Service
 public class AsistenciaService {
+
+    public AsistenciaDTO registrarAsistenciaRapida(AsistenciaRegistroRapidoDTO request) {
+        if (request == null || request.getNroDocumento() == null || request.getMetodoRegistro() == null) {
+            return null;
+        }
+        Empleado empleado = empleadoRepository.findByNroDocumento(request.getNroDocumento()).orElse(null);
+        if (empleado == null) {
+            return null;
+        }
+        AsistenciaDTO asistenciaDTO = new AsistenciaDTO();
+        asistenciaDTO.setEmpleadoId(empleado.getId());
+        asistenciaDTO.setEntrada(Instant.now());
+        asistenciaDTO.setTipoRegistro("ENTRADA");
+        asistenciaDTO.setUbicacionRegistro(request.getUbicacionRegistro() != null ? request.getUbicacionRegistro() : "Oficina Central");
+        asistenciaDTO.setMetodoRegistro(request.getMetodoRegistro());
+        asistenciaDTO.setObservacion(request.getObservacion());
+        return saveAsistencia(asistenciaDTO);
+    }
     @Autowired
     private AsistenciaRepository asistenciaRepository;
     
