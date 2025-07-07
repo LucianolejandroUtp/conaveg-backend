@@ -2,6 +2,8 @@ package com.conaveg.cona.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,8 @@ import java.util.Date;
  */
 @Component
 public class JwtUtil {
+    
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     
     @Value("${jwt.secret:mySecretKeyForJWTTokenGenerationThatIsLongEnoughForSecurity}")
     private String jwtSecret;
@@ -115,15 +119,15 @@ public class JwtUtil {
                 .parseSignedClaims(token);
             return true;
         } catch (SecurityException ex) {
-            System.err.println("Invalid JWT signature");
+            logger.warn("Invalid JWT signature: {}", ex.getMessage());
         } catch (MalformedJwtException ex) {
-            System.err.println("Invalid JWT token");
+            logger.warn("Invalid JWT token: {}", ex.getMessage());
         } catch (ExpiredJwtException ex) {
-            System.err.println("Expired JWT token");
+            logger.debug("Expired JWT token: {}", ex.getMessage());
         } catch (UnsupportedJwtException ex) {
-            System.err.println("Unsupported JWT token");
+            logger.warn("Unsupported JWT token: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
-            System.err.println("JWT claims string is empty");
+            logger.warn("JWT claims string is empty: {}", ex.getMessage());
         }
         return false;
     }

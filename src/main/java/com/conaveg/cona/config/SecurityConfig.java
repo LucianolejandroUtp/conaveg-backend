@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,16 +50,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Sin estado (stateless)
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos - NO requieren autenticación
+                // Endpoints públicos - NO requieren autenticación (deben ir PRIMERO)
                 .requestMatchers("/api/auth/**", "/conaveg/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/health", "/conaveg/actuator/health").permitAll()
                 .requestMatchers("/error", "/conaveg/error").permitAll()
-                // Permitir preflight requests (OPTIONS) para CORS
-                .requestMatchers("OPTIONS", "/**").permitAll()
-                // Permitir endpoints de usuarios temporalmente para testing
-                .requestMatchers("/api/users/**", "/conaveg/api/users/**").permitAll()
-                // Todos los demás endpoints REQUIEREN autenticación
+                // Permitir preflight requests (OPTIONS) para CORS - CORREGIDO
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Todos los demás endpoints REQUIEREN autenticación (regla general)
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex

@@ -1,5 +1,7 @@
 package com.conaveg.cona.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -14,6 +16,8 @@ import java.time.format.DateTimeFormatter;
  */
 @Service
 public class EmailService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
@@ -137,7 +141,7 @@ public class EmailService {
 
         } catch (Exception e) {
             // No lanzar excepción para no interrumpir el proceso de bloqueo
-            System.err.println("Error al enviar notificación de cuenta bloqueada: " + e.getMessage());
+            logger.error("Error al enviar notificación de cuenta bloqueada: {}", e.getMessage());
         }
     }
 
@@ -180,7 +184,7 @@ public class EmailService {
 
         } catch (Exception e) {
             // No lanzar excepción para no interrumpir el proceso de auditoría
-            System.err.println("Error al enviar alerta de actividad sospechosa: " + e.getMessage());
+            logger.error("Error al enviar alerta de actividad sospechosa: {}", e.getMessage());
         }
     }
 
