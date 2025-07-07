@@ -12,6 +12,7 @@ import java.util.List;
 // OpenAPI/Swagger imports
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping("/api/movimientos-inventario")
 @Tag(name = "Movimientos de Inventario", description = "Registro y gestión de entradas y salidas de productos en el inventario.")
+@SecurityRequirement(name = "bearerAuth")
 public class MovimientosInventarioController {
     @Autowired
     private MovimientosInventarioService movimientosInventarioService;    @Operation(summary = "Listar movimientos", description = "Obtiene todos los movimientos de inventario registrados.")

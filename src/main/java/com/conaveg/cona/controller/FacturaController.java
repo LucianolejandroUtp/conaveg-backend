@@ -23,6 +23,7 @@ import java.util.HashMap;
 // OpenAPI/Swagger imports
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping("/api/facturas")
 @Tag(name = "Facturas", description = "Gestión de facturas de compras y servicios relacionados al inventario.")
+@SecurityRequirement(name = "bearerAuth")
 public class FacturaController {
     @Autowired
     private FacturaService facturaService;

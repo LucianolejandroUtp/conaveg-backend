@@ -12,6 +12,7 @@ import java.util.List;
 // OpenAPI/Swagger imports
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping("/api/categorias-inventario")
 @Tag(name = "Categorías de Inventario", description = "Gestión de categorías para clasificar los productos del inventario.")
+@SecurityRequirement(name = "bearerAuth")
 public class CategoriasInventarioController {
     @Autowired
     private CategoriasInventarioService categoriasInventarioService;
