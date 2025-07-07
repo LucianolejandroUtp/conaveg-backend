@@ -15,6 +15,9 @@ public class AsistenciaDTO {
     private String ubicacionRegistro;
     private String metodoRegistro;
     private String observacion;
+    private Double latitud;
+    private Double longitud;
+    private String estadoAsistencia;
 
     public AsistenciaDTO() {}
 
@@ -80,5 +83,29 @@ public class AsistenciaDTO {
 
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getEstadoAsistencia() {
+        return estadoAsistencia;
+    }
+
+    public void setEstadoAsistencia(String estadoAsistencia) {
+        this.estadoAsistencia = estadoAsistencia;
     }
 }

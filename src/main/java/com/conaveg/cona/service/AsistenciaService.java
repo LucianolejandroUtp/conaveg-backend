@@ -3,6 +3,7 @@ package com.conaveg.cona.service;
 
 import com.conaveg.cona.dto.AsistenciaRegistroRapidoDTO;
 import com.conaveg.cona.config.AttendanceConfig;
+import com.conaveg.cona.constants.AttendanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,18 +55,55 @@ public class AsistenciaService {
         // Obtener la hora actual en la zona horaria local
         Instant ahoraLocal = getCurrentLocalInstant();
         
+        // Validar coordenadas GPS si están presentes
+        if (!validateGpsCoordinates(request.getLatitud(), request.getLongitud())) {
+            logger.warn("Registro de asistencia con coordenadas inválidas para empleado: {}", request.getNroDocumento());
+            // Continuar el registro pero sin coordenadas
+            request.setLatitud(null);
+            request.setLongitud(null);
+        }
+        
         AsistenciaDTO asistenciaDTO = new AsistenciaDTO();
         asistenciaDTO.setEmpleadoId(empleado.getId());
         asistenciaDTO.setEntrada(ahoraLocal);
         asistenciaDTO.setTipoRegistro("ENTRADA");
         asistenciaDTO.setUbicacionRegistro(request.getUbicacionRegistro() != null ? request.getUbicacionRegistro() : "Oficina Central");
         asistenciaDTO.setMetodoRegistro(request.getMetodoRegistro());
+        asistenciaDTO.setLatitud(request.getLatitud());
+        asistenciaDTO.setLongitud(request.getLongitud());
         
-        // Detectar tardanza y construir observación
-        String observacion = buildObservationWithLateCheck(ahoraLocal, request.getObservacion());
-        asistenciaDTO.setObservacion(observacion);
+        // Detectar tardanza y establecer estado de asistencia
+        String estadoAsistencia = determineAttendanceStatus(ahoraLocal, request.getEstadoAsistencia());
+        asistenciaDTO.setEstadoAsistencia(estadoAsistencia);
+        
+        // Generar observación con información de tardanza si aplica
+        String observacionFinal = generateObservationWithLateness(ahoraLocal, request.getObservacion(), estadoAsistencia);
+        asistenciaDTO.setObservacion(observacionFinal);
         
         return saveAsistencia(asistenciaDTO);
+    }
+
+    /**
+     * Valida y ajusta las coordenadas GPS si están presentes
+     * @param latitud Coordenada de latitud
+     * @param longitud Coordenada de longitud
+     * @return true si las coordenadas son válidas, false en caso contrario
+     */
+    private boolean validateGpsCoordinates(Double latitud, Double longitud) {
+        if (latitud == null || longitud == null) {
+            return true; // Coordenadas opcionales
+        }
+        
+        // Validar rangos válidos de coordenadas
+        boolean validLatitud = latitud >= -90.0 && latitud <= 90.0;
+        boolean validLongitud = longitud >= -180.0 && longitud <= 180.0;
+        
+        if (!validLatitud || !validLongitud) {
+            logger.warn("Coordenadas GPS inválidas: lat={}, lng={}", latitud, longitud);
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -102,34 +140,132 @@ public class AsistenciaService {
     }
 
     /**
-     * Construye la observación incluyendo detección de tardanza
+     * Determina el estado de asistencia basado en la hora de entrada
+     * @param entryTime Hora de entrada
+     * @param requestedStatus Estado solicitado por el usuario (puede ser null)
+     * @return Estado de asistencia final (valores ENUM: PUNTUAL, TARDE, AUSENTE, JUSTIFICADO, OTRO)
      */
-    private String buildObservationWithLateCheck(Instant entryTime, String originalObservation) {
-        StringBuilder observacion = new StringBuilder();
-        
-        // Verificar si hay tardanza
-        String lateInfo = checkForLateness(entryTime);
-        if (lateInfo != null) {
-            observacion.append(lateInfo);
-        }
-        
-        // Agregar observación original si existe
-        if (originalObservation != null && !originalObservation.trim().isEmpty()) {
-            if (observacion.length() > 0) {
-                observacion.append(" | ");
+    private String determineAttendanceStatus(Instant entryTime, String requestedStatus) {
+        try {
+            // Si el usuario ya especificó un estado válido, usarlo a menos que sea tardanza
+            if (requestedStatus != null && !requestedStatus.trim().isEmpty()) {
+                // Validar que el estado solicitado sea uno de los valores ENUM válidos
+                if (AttendanceStatus.isValid(requestedStatus)) {
+                    // Verificar si hay tardanza independientemente del estado solicitado
+                    if (isLateEntry(entryTime)) {
+                        return AttendanceStatus.TARDE;
+                    }
+                    return requestedStatus.toUpperCase();
+                } else {
+                    logger.warn("Estado de asistencia inválido recibido: {}. Usando detección automática.", requestedStatus);
+                }
             }
-            observacion.append(originalObservation);
+            
+            // Si no hay estado especificado o es inválido, determinar automáticamente
+            if (isLateEntry(entryTime)) {
+                return AttendanceStatus.TARDE;
+            }
+            
+            return AttendanceStatus.PUNTUAL; // Estado por defecto
+            
+        } catch (Exception e) {
+            logger.error("Error al determinar estado de asistencia: {}", e.getMessage());
+            return requestedStatus != null && AttendanceStatus.isValid(requestedStatus) ? requestedStatus.toUpperCase() : AttendanceStatus.PUNTUAL;
         }
-        
-        return observacion.length() > 0 ? observacion.toString() : null;
+    }
+
+    /**
+     * Genera la observación final incluyendo información de tiempo de tardanza si aplica
+     * @param entryTime Hora de entrada
+     * @param originalObservacion Observación original del usuario
+     * @param estadoAsistencia Estado de asistencia determinado
+     * @return Observación final con información de tiempo si es tardanza
+     */
+    private String generateObservationWithLateness(Instant entryTime, String originalObservacion, String estadoAsistencia) {
+        try {
+            StringBuilder observacion = new StringBuilder();
+            
+            // Agregar observación original si existe
+            if (originalObservacion != null && !originalObservacion.trim().isEmpty()) {
+                observacion.append(originalObservacion.trim());
+            }
+            
+            // Solo agregar información de tiempo si llegó tarde
+            if (AttendanceStatus.TARDE.equals(estadoAsistencia)) {
+                String timeInfo = calculateLatenessTimeInfo(entryTime);
+                if (timeInfo != null) {
+                    if (observacion.length() > 0) {
+                        observacion.append(" - ");
+                    }
+                    observacion.append(timeInfo);
+                }
+            }
+            
+            return observacion.toString();
+            
+        } catch (Exception e) {
+            logger.error("Error al generar observación con información de tiempo: {}", e.getMessage());
+            // En caso de error, retornar solo la observación original
+            return originalObservacion != null ? originalObservacion : "";
+        }
+    }
+
+    /**
+     * Calcula la información de tiempo de tardanza (solo el tiempo, sin etiquetas)
+     * @param entryTime Hora de entrada
+     * @return Cadena con información de tiempo (minutos y segundos)
+     */
+    private String calculateLatenessTimeInfo(Instant entryTime) {
+        try {
+            // Como el entryTime ya está "ajustado" para representar hora local,
+            // lo tratamos como UTC para obtener la hora correcta
+            ZonedDateTime entryAsLocal = entryTime.atZone(ZoneId.of("UTC"));
+            
+            // Parsear la hora de inicio configurada
+            LocalTime expectedStartTime = LocalTime.parse(attendanceConfig.getStartTime(), DateTimeFormatter.ofPattern("HH:mm"));
+            
+            // Agregar el threshold de minutos permitidos (hora límite real)
+            LocalTime actualStartTime = expectedStartTime.plusMinutes(attendanceConfig.getLateThresholdMinutes());
+            
+            // Obtener solo la hora de la entrada (sin fecha)
+            LocalTime actualEntryTime = entryAsLocal.toLocalTime();
+            
+            // Verificar si realmente llegó tarde
+            if (actualEntryTime.isAfter(actualStartTime)) {
+                // Calcular la diferencia en segundos
+                java.time.Duration duration = java.time.Duration.between(actualStartTime, actualEntryTime);
+                long totalSeconds = duration.getSeconds();
+                
+                // Convertir a minutos y segundos
+                long minutes = totalSeconds / 60;
+                long seconds = totalSeconds % 60;
+                
+                // Formatear solo el tiempo sin etiquetas
+                if (minutes > 0) {
+                    if (seconds > 0) {
+                        return String.format("%d minutos y %d segundos", minutes, seconds);
+                    } else {
+                        return String.format("%d minutos", minutes);
+                    }
+                } else {
+                    return String.format("%d segundos", seconds);
+                }
+            }
+            
+            return null; // No hay tardanza
+            
+        } catch (Exception e) {
+            logger.error("Error al calcular información de tiempo de tardanza: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**
      * Verifica si la entrada constituye una tardanza
-     * @param entryTime Hora de entrada (como Instant ajustado)
-     * @return Mensaje de tardanza o null si es puntual
+     * @param entryTime Hora de entrada
+     * @return true si es tardanza, false en caso contrario
      */
-    private String checkForLateness(Instant entryTime) {
+    private boolean isLateEntry(Instant entryTime) {
         try {
             // Como el entryTime ya está "ajustado" para representar hora local,
             // lo tratamos como UTC para obtener la hora correcta
@@ -145,25 +281,20 @@ public class AsistenciaService {
             LocalTime actualEntryTime = entryAsLocal.toLocalTime();
             
             // Verificar si llegó tarde
-            if (actualEntryTime.isAfter(actualStartTime)) {
-                // Calcular minutos de tardanza
-                long minutesLate = java.time.Duration.between(actualStartTime, actualEntryTime).toMinutes();
-                
-                String lateMessage = String.format("TARDANZA: %d minutos (llegada: %s, horario: %s)", 
-                    minutesLate, 
-                    actualEntryTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                    expectedStartTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+            boolean isLate = actualEntryTime.isAfter(actualStartTime);
+            
+            if (isLate) {
+                logger.info("Tardanza detectada. Llegada: {}, Horario límite: {}", 
+                    actualEntryTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                    actualStartTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                 );
-                
-                logger.info("Tardanza detectada: {} - {}", entryTime, lateMessage);
-                return lateMessage;
             }
             
-            return null; // No hay tardanza
+            return isLate;
             
         } catch (Exception e) {
             logger.error("Error al verificar tardanza: {}", e.getMessage());
-            return null;
+            return false;
         }
     }
 
@@ -180,18 +311,18 @@ public class AsistenciaService {
     }
 
     public AsistenciaDTO saveAsistencia(AsistenciaDTO asistenciaDTO) {
-        // Si es una entrada y no tiene observación de tardanza, verificar tardanza
+        // Si es una entrada y no tiene estado de asistencia o es "PUNTUAL", verificar tardanza
         if ("ENTRADA".equalsIgnoreCase(asistenciaDTO.getTipoRegistro()) && 
             asistenciaDTO.getEntrada() != null) {
             
-            String observacionActual = asistenciaDTO.getObservacion();
-            // Solo verificar tardanza si no hay ya una observación de tardanza
-            if (observacionActual == null || !observacionActual.contains("TARDANZA")) {
-                String observacionConTardanza = buildObservationWithLateCheck(
+            String estadoActual = asistenciaDTO.getEstadoAsistencia();
+            // Solo verificar tardanza si no hay ya un estado específico o es "PUNTUAL"
+            if (estadoActual == null || AttendanceStatus.PUNTUAL.equals(estadoActual)) {
+                String estadoFinal = determineAttendanceStatus(
                     asistenciaDTO.getEntrada(), 
-                    observacionActual
+                    estadoActual
                 );
-                asistenciaDTO.setObservacion(observacionConTardanza);
+                asistenciaDTO.setEstadoAsistencia(estadoFinal);
             }
         }
         
@@ -224,6 +355,9 @@ public class AsistenciaService {
         dto.setUbicacionRegistro(asistencia.getUbicacionRegistro());
         dto.setMetodoRegistro(asistencia.getMetodoRegistro());
         dto.setObservacion(asistencia.getObservacion());
+        dto.setLatitud(asistencia.getLatitud());
+        dto.setLongitud(asistencia.getLongitud());
+        dto.setEstadoAsistencia(asistencia.getEstadoAsistencia());
         return dto;
     }
 
@@ -243,6 +377,9 @@ public class AsistenciaService {
         asistencia.setUbicacionRegistro(dto.getUbicacionRegistro());
         asistencia.setMetodoRegistro(dto.getMetodoRegistro());
         asistencia.setObservacion(dto.getObservacion());
+        asistencia.setLatitud(dto.getLatitud());
+        asistencia.setLongitud(dto.getLongitud());
+        asistencia.setEstadoAsistencia(dto.getEstadoAsistencia());
         return asistencia;
     }
 }

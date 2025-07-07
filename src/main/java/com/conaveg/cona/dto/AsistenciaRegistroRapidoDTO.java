@@ -5,6 +5,9 @@ public class AsistenciaRegistroRapidoDTO {
     private String metodoRegistro;
     private String ubicacionRegistro; // opcional, puede ser null
     private String observacion; // opcional
+    private Double latitud; // opcional, coordenada GPS
+    private Double longitud; // opcional, coordenada GPS
+    private String estadoAsistencia; // opcional, estado específico
 
     public AsistenciaRegistroRapidoDTO() {}
 
@@ -31,5 +34,29 @@ public class AsistenciaRegistroRapidoDTO {
     }
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getEstadoAsistencia() {
+        return estadoAsistencia;
+    }
+
+    public void setEstadoAsistencia(String estadoAsistencia) {
+        this.estadoAsistencia = estadoAsistencia;
     }
 }

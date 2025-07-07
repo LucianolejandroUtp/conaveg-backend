@@ -39,6 +39,15 @@ public class Asistencia {
     @Column(name = "observacion")
     private String observacion;
 
+    @Column(name = "latitud")
+    private Double latitud;
+
+    @Column(name = "longitud")
+    private Double longitud;
+
+    @Column(name = "estado_asistencia")
+    private String estadoAsistencia;
+
     @ColumnDefault("'ACTIVO'")
     @Lob
     @Column(name = "estado", insertable = false, updatable = false)
@@ -117,6 +126,30 @@ public class Asistencia {
 
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getEstadoAsistencia() {
+        return estadoAsistencia;
+    }
+
+    public void setEstadoAsistencia(String estadoAsistencia) {
+        this.estadoAsistencia = estadoAsistencia;
     }
 
     public String getEstado() {
