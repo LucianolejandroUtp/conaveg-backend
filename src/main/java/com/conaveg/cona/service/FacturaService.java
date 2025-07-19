@@ -32,13 +32,58 @@ public class FacturaService {
     }
 
     public FacturaDTO updateFactura(Long id, FacturaDTO facturaDTO) {
-        if (facturaRepository.existsById(id)) {
-            Factura factura = toEntity(facturaDTO);
-            factura.setId(id);
-            Factura updated = facturaRepository.save(factura);
-            return toDTO(updated);
+        return facturaRepository.findById(id)
+            .map(existingFactura -> {
+                // Merge parcial: solo actualizar campos no-null del DTO
+                mergeNonNullFields(facturaDTO, existingFactura);
+                Factura updated = facturaRepository.save(existingFactura);
+                return toDTO(updated);
+            })
+            .orElse(null);
+    }
+    
+    private void mergeNonNullFields(FacturaDTO dto, Factura existing) {
+        // Actualizar solo campos no-null del DTO
+        if (dto.getProveedorId() != null) {
+            Proveedor proveedor = new Proveedor();
+            proveedor.setId(dto.getProveedorId());
+            existing.setProveedores(proveedor);
         }
-        return null;
+        if (dto.getUsuarioId() != null) {
+            User usuario = new User();
+            usuario.setId(dto.getUsuarioId());
+            existing.setUsuarios(usuario);
+        }
+        if (dto.getNroFactura() != null) {
+            existing.setNroFactura(dto.getNroFactura());
+        }
+        if (dto.getTipoDocumento() != null) {
+            existing.setTipoDocumento(dto.getTipoDocumento());
+        }
+        if (dto.getFechaEmision() != null) {
+            existing.setFechaEmision(dto.getFechaEmision());
+        }
+        if (dto.getFechaVencimiento() != null) {
+            existing.setFechaVencimiento(dto.getFechaVencimiento());
+        }
+        if (dto.getMontoTotal() != null) {
+            existing.setMontoTotal(dto.getMontoTotal());
+        }
+        if (dto.getMoneda() != null) {
+            existing.setMoneda(dto.getMoneda());
+        }
+        if (dto.getDescripcion() != null) {
+            existing.setDescripcion(dto.getDescripcion());
+        }
+        if (dto.getRutaArchivo() != null) {
+            existing.setRutaArchivo(dto.getRutaArchivo());
+        }
+        if (dto.getNombreArchivo() != null) {
+            existing.setNombreArchivo(dto.getNombreArchivo());
+        }
+        if (dto.getEstadoFactura() != null) {
+            existing.setEstadoFactura(dto.getEstadoFactura());
+        }
     }
     private FacturaDTO toDTO(Factura factura) {
         FacturaDTO dto = new FacturaDTO();

@@ -138,15 +138,15 @@ public class FacturaController {
         }
     }
 
-    @Operation(summary = "Actualizar factura", description = "Actualiza los datos de una factura existente.")
+    @Operation(summary = "Actualizar factura", description = "Actualiza parcialmente los datos de una factura existente. Solo se modifican los campos proporcionados, manteniéndose los valores existentes para campos no especificados.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Factura actualizada correctamente"),
         @ApiResponse(responseCode = "404", description = "Factura no encontrada")
     })
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<FacturaDTO> updateFactura(
             @Parameter(description = "ID de la factura a actualizar", example = "1") @PathVariable Long id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la factura")
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos a actualizar de la factura (solo campos proporcionados serán modificados)")
             @RequestBody FacturaDTO facturaDTO) {
         FacturaDTO updated = facturaService.updateFactura(id, facturaDTO);
         if (updated != null) {
