@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,32 +41,114 @@ public class AsistenciaService {
     private AttendanceConfig attendanceConfig;
 
     /**
-     * Registra una asistencia rápida con detección automática de tardanza
+     * Registra una asistencia rápida con detección automática de entrada/salida y tardanza
+     * - Si no existe entrada para el día: crea registro de ENTRADA
+     * - Si ya existe entrada sin salida: actualiza con SALIDA
+     * - Si ya existe entrada y salida: retorna error
      */
     public AsistenciaDTO registrarAsistenciaRapida(AsistenciaRegistroRapidoDTO request) {
+        logger.info("🎯 INICIANDO registro rápido para documento: {}", request != null ? request.getNroDocumento() : "NULL");
+        
         if (request == null || request.getNroDocumento() == null || request.getMetodoRegistro() == null) {
+            logger.error("❌ Datos incompletos en request: documento={}, método={}", 
+                request != null ? request.getNroDocumento() : "NULL",
+                request != null ? request.getMetodoRegistro() : "NULL");
             return null;
         }
         
         Empleado empleado = empleadoRepository.findByNroDocumento(request.getNroDocumento()).orElse(null);
         if (empleado == null) {
+            logger.error("❌ Empleado no encontrado con documento: {}", request.getNroDocumento());
             return null;
         }
         
+        logger.info("✅ Empleado encontrado: {} - ID: {}", empleado.getNroDocumento(), empleado.getId());
+        
         // Obtener la hora actual en la zona horaria local
         Instant ahoraLocal = getCurrentLocalInstant();
+        logger.info("⏰ Hora actual calculada: {}", ahoraLocal);
         
         // Validar coordenadas GPS si están presentes
         if (!validateGpsCoordinates(request.getLatitud(), request.getLongitud())) {
-            logger.warn("Registro de asistencia con coordenadas inválidas para empleado: {}", request.getNroDocumento());
+            logger.warn("⚠️ Registro de asistencia con coordenadas inválidas para empleado: {}", request.getNroDocumento());
             // Continuar el registro pero sin coordenadas
             request.setLatitud(null);
             request.setLongitud(null);
         }
         
+        // Buscar si ya existe un registro de entrada para hoy
+        Optional<Asistencia> registroEntradaHoy = buscarEntradaDelDia(empleado, ahoraLocal);
+        
+        if (registroEntradaHoy.isPresent()) {
+            // Ya existe entrada, procesar como SALIDA
+            logger.info("📋 FLUJO: SALIDA (ya existe entrada)");
+            return procesarRegistroSalida(registroEntradaHoy.get(), ahoraLocal, request);
+        } else {
+            // No existe entrada, procesar como ENTRADA
+            logger.info("📋 FLUJO: ENTRADA (no existe entrada previa)");
+            return procesarRegistroEntrada(empleado, ahoraLocal, request);
+        }
+    }
+    
+    /**
+     * Busca un registro de entrada para el empleado en el día actual
+     * Usa la MISMA lógica que getCurrentLocalInstant() para ser consistente
+     */
+    private Optional<Asistencia> buscarEntradaDelDia(Empleado empleado, Instant momentoActual) {
+        try {
+            logger.info("🔍 Buscando entrada existente para empleado: {} en momento: {}", 
+                empleado.getNroDocumento(), momentoActual);
+            
+            // Usar la MISMA lógica que getCurrentLocalInstant() para obtener el día
+            ZoneId localZone = ZoneId.of(attendanceConfig.getTimezone());
+            ZonedDateTime ahoraLocal = ZonedDateTime.now(localZone);
+            java.time.LocalDate fechaHoy = ahoraLocal.toLocalDate();
+            
+            // Calcular inicio y fin del día usando la MISMA estrategia
+            // Inicio del día: 00:00:00 tratado como UTC
+            java.time.LocalDateTime inicioDiaLocal = fechaHoy.atStartOfDay();
+            Instant inicioInstant = inicioDiaLocal.atZone(ZoneId.of("UTC")).toInstant();
+            
+            // Fin del día: 23:59:59 tratado como UTC  
+            java.time.LocalDateTime finDiaLocal = fechaHoy.atTime(23, 59, 59);
+            Instant finInstant = finDiaLocal.atZone(ZoneId.of("UTC")).toInstant();
+            
+            logger.info("📅 Buscando registros del día {} entre {} y {} (usando lógica de getCurrentLocalInstant)", 
+                fechaHoy, inicioInstant, finInstant);
+            
+            Optional<Asistencia> resultado = asistenciaRepository.findEntradaByEmpleadoAndDate(
+                empleado, inicioInstant, finInstant);
+            
+            if (resultado.isPresent()) {
+                Asistencia asistencia = resultado.get();
+                logger.info("✅ ENTRADA ENCONTRADA - ID: {}, Empleado: {}, Tipo: {}, Entrada: {}, Salida: {}", 
+                    asistencia.getId(),
+                    empleado.getNroDocumento(), 
+                    asistencia.getTipoRegistro(),
+                    asistencia.getEntrada(),
+                    asistencia.getSalida() != null ? asistencia.getSalida() : "NULL"
+                );
+            } else {
+                logger.info("❌ NO SE ENCONTRÓ entrada para empleado: {} en fecha: {}", 
+                    empleado.getNroDocumento(), fechaHoy);
+            }
+            
+            return resultado;
+        } catch (Exception e) {
+            logger.error("❌ Error al buscar entrada del día para empleado {}: {}", empleado.getNroDocumento(), e.getMessage());
+            return Optional.empty();
+        }
+    }
+    
+    /**
+     * Procesa un registro de ENTRADA (nuevo registro)
+     */
+    private AsistenciaDTO procesarRegistroEntrada(Empleado empleado, Instant horaEntrada, AsistenciaRegistroRapidoDTO request) {
+        logger.info("🚪 Procesando registro de ENTRADA para empleado: {} a las {}", empleado.getNroDocumento(), horaEntrada);
+        
         AsistenciaDTO asistenciaDTO = new AsistenciaDTO();
         asistenciaDTO.setEmpleadoId(empleado.getId());
-        asistenciaDTO.setEntrada(ahoraLocal);
+        asistenciaDTO.setEntrada(horaEntrada);
         asistenciaDTO.setTipoRegistro("ENTRADA");
         asistenciaDTO.setUbicacionRegistro(request.getUbicacionRegistro() != null ? request.getUbicacionRegistro() : "Oficina Central");
         asistenciaDTO.setMetodoRegistro(request.getMetodoRegistro());
@@ -73,14 +156,124 @@ public class AsistenciaService {
         asistenciaDTO.setLongitud(request.getLongitud());
         
         // Detectar tardanza y establecer estado de asistencia
-        String estadoAsistencia = determineAttendanceStatus(ahoraLocal, request.getEstadoAsistencia());
+        String estadoAsistencia = determineAttendanceStatus(horaEntrada, request.getEstadoAsistencia());
         asistenciaDTO.setEstadoAsistencia(estadoAsistencia);
         
         // Generar observación con información de tardanza si aplica
-        String observacionFinal = generateObservationWithLateness(ahoraLocal, request.getObservacion(), estadoAsistencia);
+        String observacionFinal = generateObservationWithLateness(horaEntrada, request.getObservacion(), estadoAsistencia);
         asistenciaDTO.setObservacion(observacionFinal);
         
-        return saveAsistencia(asistenciaDTO);
+        logger.info("💾 Guardando nuevo registro de ENTRADA - EmpleadoId: {}, Estado: {}", empleado.getId(), estadoAsistencia);
+        AsistenciaDTO resultado = saveAsistencia(asistenciaDTO);
+        
+        if (resultado != null) {
+            logger.info("✅ ENTRADA creada exitosamente - ID: {}", resultado.getId());
+        } else {
+            logger.error("❌ Error al crear registro de ENTRADA");
+        }
+        
+        return resultado;
+    }
+    
+    /**
+     * Procesa un registro de SALIDA (actualización de registro existente)
+     */
+    private AsistenciaDTO procesarRegistroSalida(Asistencia registroExistente, Instant horaSalida, AsistenciaRegistroRapidoDTO request) {
+        logger.info("🚪 Procesando registro de SALIDA para empleado: {}", registroExistente.getEmpleados().getNroDocumento());
+        
+        // Verificar si ya tiene salida registrada
+        if (registroExistente.getSalida() != null) {
+            logger.warn("⚠️ El empleado {} ya tiene salida registrada para hoy: {}", 
+                registroExistente.getEmpleados().getNroDocumento(), registroExistente.getSalida());
+            return null; // Ya tiene entrada y salida completas
+        }
+        
+        // Validar que la salida sea después de la entrada
+        if (horaSalida.isBefore(registroExistente.getEntrada())) {
+            logger.warn("⚠️ Intento de registrar salida antes de la entrada para empleado: {} - Entrada: {}, Salida intentada: {}", 
+                registroExistente.getEmpleados().getNroDocumento(), registroExistente.getEntrada(), horaSalida);
+            return null; // Salida no puede ser antes que entrada
+        }
+        
+        logger.info("✅ Actualizando registro ID: {} - Entrada: {} → Salida: {}", 
+            registroExistente.getId(), registroExistente.getEntrada(), horaSalida);
+        
+        // Actualizar el registro existente con los datos de salida
+        registroExistente.setSalida(horaSalida);
+        registroExistente.setTipoRegistro("SALIDA");
+        
+        // Actualizar ubicación y método si se proporcionan
+        if (request.getUbicacionRegistro() != null) {
+            registroExistente.setUbicacionRegistro(request.getUbicacionRegistro());
+        }
+        registroExistente.setMetodoRegistro(request.getMetodoRegistro());
+        
+        // Actualizar coordenadas GPS si están presentes
+        if (request.getLatitud() != null && request.getLongitud() != null) {
+            registroExistente.setLatitud(request.getLatitud());
+            registroExistente.setLongitud(request.getLongitud());
+        }
+        
+        // Calcular horas trabajadas y actualizar observación
+        String observacionSalida = generateObservationForExit(
+            registroExistente.getEntrada(), 
+            horaSalida, 
+            request.getObservacion()
+        );
+        
+        // Combinar observación existente con la nueva información
+        String observacionFinal = combineObservations(registroExistente.getObservacion(), observacionSalida);
+        registroExistente.setObservacion(observacionFinal);
+        
+        // Guardar y retornar
+        Asistencia actualizado = asistenciaRepository.save(registroExistente);
+        return convertToDTO(actualizado);
+    }
+    
+    /**
+     * Genera observación específica para salidas incluyendo horas trabajadas
+     */
+    private String generateObservationForExit(Instant entrada, Instant salida, String observacionUsuario) {
+        try {
+            StringBuilder observacion = new StringBuilder();
+            
+            // Agregar observación del usuario si existe
+            if (observacionUsuario != null && !observacionUsuario.trim().isEmpty()) {
+                observacion.append(observacionUsuario.trim());
+            }
+            
+            // Calcular horas trabajadas
+            java.time.Duration tiempoTrabajado = java.time.Duration.between(entrada, salida);
+            long horasTrabajadas = tiempoTrabajado.toHours();
+            long minutosTrabajados = tiempoTrabajado.toMinutesPart();
+            
+            // Agregar información de tiempo trabajado
+            if (observacion.length() > 0) {
+                observacion.append(" - ");
+            }
+            observacion.append(String.format("Tiempo trabajado: %d horas y %d minutos", horasTrabajadas, minutosTrabajados));
+            
+            return observacion.toString();
+            
+        } catch (Exception e) {
+            logger.error("Error al generar observación de salida: {}", e.getMessage());
+            return observacionUsuario != null ? observacionUsuario : "";
+        }
+    }
+    
+    /**
+     * Combina observaciones existentes con nuevas
+     */
+    private String combineObservations(String observacionExistente, String nuevaObservacion) {
+        if (observacionExistente == null || observacionExistente.trim().isEmpty()) {
+            return nuevaObservacion;
+        }
+        
+        if (nuevaObservacion == null || nuevaObservacion.trim().isEmpty()) {
+            return observacionExistente;
+        }
+        
+        return observacionExistente + " | " + nuevaObservacion;
     }
 
     /**

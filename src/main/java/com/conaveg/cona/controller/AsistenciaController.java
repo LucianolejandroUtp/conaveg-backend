@@ -25,21 +25,41 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @SecurityRequirement(name = "bearerAuth")
 public class AsistenciaController {
 
-    @Operation(summary = "Registro rápido de asistencia", description = "Registra una asistencia solo con el número de documento y el método de registro. El backend resuelve el empleado y guarda la entrada.")
+    @Operation(
+        summary = "Registro rápido de asistencia (Entrada/Salida automática)", 
+        description = "Registra asistencia automáticamente determinando si es entrada o salida. " +
+                     "Si no existe registro de entrada para el día: crea ENTRADA. " +
+                     "Si ya existe entrada sin salida: actualiza con SALIDA. " +
+                     "Solo requiere número de documento y método de registro."
+    )
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Asistencia registrada exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
+        @ApiResponse(responseCode = "201", description = "Asistencia registrada exitosamente (nueva entrada)"),
+        @ApiResponse(responseCode = "200", description = "Asistencia actualizada exitosamente (salida registrada)"),
+        @ApiResponse(responseCode = "404", description = "Empleado no encontrado"),
+        @ApiResponse(responseCode = "400", description = "Error en validación (ej: salida antes de entrada, ya tiene entrada y salida)")
     })
     @PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE')")
     @PostMapping("/registro-rapido")
     public ResponseEntity<AsistenciaDTO> registrarAsistenciaRapida(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos mínimos para registrar asistencia")
             @RequestBody AsistenciaRegistroRapidoDTO request) {
-        AsistenciaDTO created = asistenciaService.registrarAsistenciaRapida(request);
-        if (created != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        AsistenciaDTO result = asistenciaService.registrarAsistenciaRapida(request);
+        
+        if (result != null) {
+            // Determinar el código de respuesta basado en el tipo de registro
+            if ("ENTRADA".equals(result.getTipoRegistro())) {
+                // Nueva entrada creada
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            } else if ("SALIDA".equals(result.getTipoRegistro())) {
+                // Salida actualizada en registro existente
+                return ResponseEntity.ok(result);
+            } else {
+                // Caso genérico
+                return ResponseEntity.ok(result);
+            }
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            // Error: empleado no encontrado o validación fallida
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
     @Autowired
